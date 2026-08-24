@@ -24,6 +24,17 @@ fires before consent.
 | OPS-126 | A/B testing platform ready IF used: experiment hygiene rules — no flicker (async load or server-side assignment), equal-prominence variants, minimum sample/power planned before declaring winners, experiments don't break SEO cloaking rules (server serves consistent content to crawlers). If not used yet, mark N/A until first experiment. | `[MANUAL]` platform decision recorded; `[AGENT]` anti-flicker implementation cited when active |
 | OPS-127 | Heatmap/session-replay tool (if used): configured to mask ALL input fields and personal data in replays (PII never leaves browser unmasked — GDPR coupling), sampling capped to control cost (pairs with SEC-062), excluded from authenticated admin areas. Consent-gated like all non-essential tracking. | `[MANUAL]` masking config review with sample replay checked; `[AGENT]` verify masked fields in captured session |
 
+## Delivery Authenticity & Expiry Guards (v4)
+
+Added in the v4 expansion (2026-08-24 research pass). These cover the two
+silent killers uptime monitoring cannot see: mail that never arrives, and
+assets that expire.
+
+| ID | Requirement | Verification |
+|---|---|---|
+| OPS-128 | Every domain the product sends email from publishes an SPF record enumerating all senders (ending `~all` or stricter), signs outbound mail with DKIM keys issued by its ESP, and enforces DMARC at `p=quarantine` minimum progressing to `p=reject`, with aggregate reports reviewed monthly; transactional mail uses a dedicated subdomain separate from bulk/marketing. Google/Yahoo/Microsoft now reject unauthenticated mail — password resets and invoices depend on this. | `[AUTO]` DNS TXT checks (SPF exists + lookup count ≤10, DMARC policy ≥ quarantine, DKIM selector resolves); `[AGENT]` test send shows `Authentication-Results: pass` |
+| OPS-129 | Expiry-class guard: every owned domain has auto-renew ON, registrar transfer lock ON, a monitored valid registrant contact plus a secondary email NOT tied to the domain, and an independent expiry alarm ≥30 days out — the same alarm wired to TLS certificate expiry (pairs with the SEC-054 amendment). ICANN policy makes domain expiry disruptive BY DESIGN: site and email die together. | `[MANUAL]` console settings recorded once; `[AUTO]` scripted WHOIS/expiry-date threshold check |
+
 ---
 
 ## Changelog
@@ -31,3 +42,4 @@ fires before consent.
 | Date | Change |
 |---|---|
 | 2026-08-24 | Initial import: 8 ops items with stable IDs and verification methods, privacy couplings noted. |
+| 2026-08-24 | v4: Added OPS-128 (SPF/DKIM/DMARC enforcement + transactional subdomain) and OPS-129 (domain/certificate expiry guards). Total now 10. |

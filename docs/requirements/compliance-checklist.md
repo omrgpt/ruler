@@ -171,6 +171,18 @@ screenshot/console reference.
 | SEC-073 | Deployment pipelines secured (review-gated, masked secrets) | ☐ | |
 | SEC-074 | Third-party build actions vetted before adoption | ☐ | |
 | SEC-075 | Build deps pinned (SHA-pinned actions, lockfile `npm ci`) | ☐ | |
+| SEC-076 | Preview/staging deployments auth-protected; never touch prod data anonymously | ☐ | |
+| SEC-077 | Passwords NIST-validated (length floor, 64+ accepted, no composition/rotation) + breached-password blocklist | ☐ | |
+| SEC-078 | Collection/export endpoints clamp page size server-side (hard max ~100) | ☐ | |
+| SEC-079 | Step-up re-auth ≤15min on sensitive ops; contact changes notify old+new with reversal window; support path never bypasses MFA | ☐ | |
+| SEC-080 | Third-party scripts allowlisted + SRI/self-hosted; CSP blocks all other origins | ☐ | |
+| SEC-081 | No unmasked prod PII in lower envs; destructive scripts require env-naming flag; env-var name parity + fail-fast boot | ☐ | |
+| SEC-082 | Break-glass recovery codes offline + exercised runbook per infra account | ☐ | |
+| SEC-083 | Identity inventory (humans + keys/tokens/grants); same-day offboarding; quarterly dormant-access purge | ☐ | |
+| SEC-084 | Zero dangling DNS records; quarterly takeover-fingerprint zone audit | ☐ | |
+| SEC-085 | AI model versions pinned; deprecation watch; eval-set deploy gate *(feature-gated: external AI APIs)* | ☐ | |
+| SEC-086 | Card pages processor-iframe-only; SAQ A filed w/ script confirmation *(feature-gated: self-hosted checkout)* | ☐ | |
+| SEC-087 | DDoS/WAF platform posture confirmed before launch spikes *(feature-gated: traffic-attracting launch)* | ☐ | |
 
 ---
 
@@ -184,6 +196,7 @@ screenshot/console reference.
 | MOB-066 | Deep links validated before sensitive actions | ☐ | |
 | MOB-067 | Biometrics unlock UI only; server step-up for sensitive actions | ☐ | |
 | MOB-068 | ATT prompt iff tracking used; disclosures synced | ☐ | |
+| MOB-069 | Store privacy labels accurate; Play deletion web link live; Apple privacy manifests complete *(feature-gated: store distribution)* | ☐ | |
 
 ---
 
@@ -200,6 +213,10 @@ screenshot/console reference.
 | PERF-074 | No hidden background jobs holding connections | ☐ | |
 | PERF-075 | Cascading deletions: files/images/rows all wiped, zero orphans | ☐ | |
 | PERF-076 | Third-party purge: payment/ESP/AI-log deletion requests automated | ☐ | |
+| PERF-077 | Schema changes ship as versioned forward-only migrations; no manual console DDL; destructive ops expand→contract | ☐ | |
+| PERF-078 | Business invariants mirrored by DB-level NOT NULL/UNIQUE/FK/CHECK constraints | ☐ | |
+| PERF-079 | Jobs: bounded retries, alerting dead-letter state, idempotent replay, heartbeat monitor for missed runs | ☐ | |
+| PERF-080 | Money stored as integer minor-units/NUMERIC with currency column; floats forbidden *(feature-gated: payments/billing)* | ☐ | |
 
 ---
 
@@ -249,6 +266,13 @@ screenshot/console reference.
 | LEG-091 | PII scrubbing middleware before external AI calls | ☐ | |
 | LEG-092 | Cross-border transfer adequacy verified per external destination | ☐ | |
 | LEG-093 | Explicit unbundled consent for sensitive data processing | ☐ | |
+| LEG-094 | Retention periods enforced by automated purge mechanisms with logged runs (policy text alone fails) | ☐ | |
+| LEG-095 | Customer AI answers grounded in approved source w/ citations or refuse; AI disclosure; transcripts kept *(feature-gated: customer-facing AI)* | ☐ | |
+| LEG-096 | EU withdrawal-right mechanics at checkout incl. electronic withdrawal function; waivers only where valid *(feature-gated: EU B2C checkout)* | ☐ | |
+| LEG-097 | GDPR Art. 27 written EU representative named in policy *(feature-gated: EU customers, no EU entity)* | ☐ | |
+| LEG-098 | Per-channel opt-in, approved templates, registered sender IDs for WhatsApp/SMS *(feature-gated: messaging channels)* | ☐ | |
+| LEG-099 | VAT place-of-supply billing route recorded (Non-Union OSS vs MoR) before first EU consumer sale *(feature-gated: direct EU B2C billing)* | ☐ | |
+| LEG-100 | UGC/AI-content surfaces: report control → moderation queue w/ SLA, statement of reasons, appeals *(feature-gated: public UGC/AI content)* | ☐ | |
 
 ---
 
@@ -348,6 +372,8 @@ Mapping: 124←105 · 125←106 · 126←107 · 127←108+109 · 128←110 · 12
 | OPS-125 | Email capture lawful: double-opt-in, unsubscribe honored | ☐ | |
 | OPS-126 | A/B testing hygiene if used (anti-flicker, no SEO cloaking) | ☐ | |
 | OPS-127 | Heatmap/replay masks PII, consent-gated if used | ☐ | |
+| OPS-128 | Sending domains enforce SPF/DKIM/DMARC (≥quarantine); transactional mail on dedicated subdomain | ☐ | |
+| OPS-129 | Domain auto-renew/transfer-lock/secondary-contact/expiry alarm ≥30d; same alarm wired to TLS certs | ☐ | |
 
 ---
 
@@ -355,16 +381,21 @@ Mapping: 124←105 · 125←106 · 126←107 · 127←108+109 · 128←110 · 12
 
 | Section | IDs | ✅ | 🔶 | ⛔ | ☐ | ➖ |
 |---|---|---|---|---|---|---|
-| Security | 75 | | | | 75 | |
-| Mobile | 5 | | | | 5 | |
-| Performance | 8 | | | | 8 | |
-| Legal | 19 | | | | 19 | |
+| Security | 87 | | | | 87 | |
+| Mobile | 6 | | | | 6 | |
+| Performance | 12 | | | | 12 | |
+| Legal | 26 | | | | 26 | |
 | SEO | 14 | | | | 14 | |
 | Conversion | 20 | | | | 19 | 1 |
 | UI/UX | 15 | | | | 15 | |
-| Ops | 8 | | | | 8 | |
-| **Total** | **164** | | | | **163** | **1** |
+| Ops | 10 | | | | 10 | |
+| **Total** | **190** | | | | **189** | **1** |
 
-*164 ledger IDs cover the v3 master list's 154 checkpoints: 12 new items
-(SEC-064…075) + v3's section reorganization (IDs permanent, unmoved) + 3
-deduped duplicates (#142, #153, #154) + the v2 merge mappings noted above.*
+*190 ledger IDs. History: v3's 164 covered the 154-point master list; v4
+(2026-08-24 research pass) added 26 items from a sourced gap analysis
+(OWASP Top 10 2025 / API Top 10 / GenAI LLM Top 10 2026, NIST SP 800-63B,
+ICANN/ERRP, PCI DSS v4.x FAQ 1588, EU AI Act Art. 50, DSA Art. 16, CJEU and
+chatbot-liability rulings) and amended SEC-036, SEC-044, SEC-054, SEC-056, SEC-068, LEG-075 in place. Feature-gated add-ons are marked *(feature-gated: …)* —
+they activate when the named feature/market exists; everything else is
+universal. Full research dossiers with sources were delivered in-session;
+IDs remain permanent and never renumbered.*

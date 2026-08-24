@@ -15,6 +15,7 @@ by projects in this workspace.
 | MOB-066 | Deep links validated before triggering sensitive actions: verify host/scheme against allowlist, require authenticated session, confirm intent server-side for anything state-changing (password reset, payment, invite acceptance). Unhandled/untrusted links never auto-execute actions. | `[AGENT]` malicious-link test cases (wrong host, missing params, replay) → rejected |
 | MOB-067 | Biometrics unlock the UI only; they are never the sole gate for sensitive actions. Server re-verifies session + step-up auth (re-auth/OTP) for payments, credential changes, and data export. Biometric bypass on device changes nothing server-side. | `[AGENT]` demonstrate sensitive action requiring server step-up even when biometric enabled |
 | MOB-068 | App Tracking Transparency: if the app (or embedded SDKs: analytics, ads) tracks users across other companies' apps or accesses IDFA, Apple's ATT prompt is triggered and permission honored before any tracking. If no cross-app tracking occurs, document that determination instead. Privacy manifest / data-disclosure labels kept in sync with actual SDK behavior. | `[MANUAL]` device test: fresh install → prompt appears iff tracking used; `[AGENT]` SDK inventory vs disclosure table |
+| MOB-069 | *(feature-gated: store distribution)* Store privacy accuracy enforced: Play Data safety section and Apple privacy nutrition labels match actual SDK data flows; Play account-deletion web resource registered and functional (pairs with LEG-080 pipeline); Apple `PrivacyInfo.xcprivacy` present with required-reason API codes for the app AND every listed third-party SDK. Inaccurate labels or missing manifests cause Play removals and Apple build blocks (ITMS-91061). | `[AUTO]` manifest presence/link-liveness scan; `[AGENT]` SDK inventory vs Data safety form |
 
 ---
 
@@ -23,3 +24,4 @@ by projects in this workspace.
 | Date | Change |
 |---|---|
 | 2026-08-24 | Initial import: 5 mobile items with stable IDs and verification methods. |
+| 2026-08-24 | v4: Added MOB-069 (store privacy-label accuracy, deletion web link, privacy manifests). Total now 6. |

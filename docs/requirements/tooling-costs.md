@@ -1,6 +1,6 @@
 # Tooling & Service Costs Behind the Requirements
 
-Every external service the 152-ID library depends on, with its cost reality:
+Every external service the 190-ID library depends on, with its cost reality:
 what's genuinely free, what has a workable free tier, and what eventually
 costs money. Use this when planning a launch budget — nothing here should be
 a surprise bill.

@@ -6,7 +6,7 @@ Markdown so **any** AI agent (Codex, Gemini CLI, Claude Code, Cursor,
 opencode) or human can read and act on it.
 
 **Master tracker:** [`compliance-checklist.md`](./compliance-checklist.md) —
-all 164 tracked IDs covering the **154-point (v3) master checklist**, with
+all 190 tracked IDs (v4), with
 live status. Nothing is "done" until that file says so with evidence.
 
 ---
@@ -15,16 +15,16 @@ live status. Nothing is "done" until that file says so with evidence.
 
 | File | Scope | IDs |
 |---|---|---|
-| [`security-authentication.md`](./security-authentication.md) | Secrets, auth, authz, DB security, API/input hardening, web attacks, payments, rate limiting, infra config, logging, supply chain, AI safety, business-logic resilience, CI/CD pipeline | SEC-001 … SEC-075 (75) |
-| [`mobile.md`](./mobile.md) | Mobile bundle, secure storage, deep links, biometrics, ATT | MOB-064 … MOB-068 (5) |
-| [`backend-performance.md`](./backend-performance.md) | Query audits, N+1, indexing, connection lifecycle, blob hygiene, cascading deletions, third-party purges | PERF-069 … PERF-076 (8) |
-| [`legal-compliance-gcc-gdpr.md`](./legal-compliance-gcc-gdpr.md) | GCC PDPL (BH/AE/SA) + GDPR: policies, cookies, data rights, deletion mechanics, minors, AI/cross-border processing, breach plan | LEG-075 … LEG-093 (19) |
+| [`security-authentication.md`](./security-authentication.md) | Secrets, auth, authz, DB security, API/input hardening, web attacks, payments/machine endpoints, rate limiting, infra config, logging, supply chain, AI safety, business-logic resilience, CI/CD pipeline, deployment-surface/recovery/operational security | SEC-001 … SEC-087 (87) |
+| [`mobile.md`](./mobile.md) | Mobile bundle, secure storage, deep links, biometrics, ATT, store privacy labels & manifests | MOB-064 … MOB-069 (6) |
+| [`backend-performance.md`](./backend-performance.md) | Query audits, N+1, indexing, connection lifecycle, blob hygiene, cascading deletions, third-party purges, migration discipline, DB-enforced constraints, job reliability, money types | PERF-069 … PERF-080 (12) |
+| [`legal-compliance-gcc-gdpr.md`](./legal-compliance-gcc-gdpr.md) | GCC PDPL (BH/AE/SA) + GDPR: policies, cookies, data rights, deletion mechanics, minors, AI/cross-border processing, breach plan, retention automation, AI disclosure, EU consumer/VAT/channel duties | LEG-075 … LEG-100 (26) |
 | [`seo-metadata-production.md`](./seo-metadata-production.md) | Domain, metadata/OG/schema, semantic HTML, crawler files, SSR output, console hygiene, bundle budget | SEO-096 … SEO-109 (14) |
 | [`conversion-content.md`](./conversion-content.md) | Landing page quality, CTAs, copy, speed, trust signals | CRO-085 … CRO-104 (20) |
 | [`ui-ux-frontend.md`](./ui-ux-frontend.md) | Mobile UX, metadata, pages, messages, polish | UIX-105 … UIX-119 (15) |
-| [`analytics-monitoring.md`](./analytics-monitoring.md) | Uptime, error tracking, SEO console, analytics, experiments | OPS-120 … OPS-127 (8) |
+| [`analytics-monitoring.md`](./analytics-monitoring.md) | Uptime, error tracking, SEO console, analytics, experiments, email authentication, domain/cert expiry guards | OPS-120 … OPS-129 (10) |
 | [`tooling-costs.md`](./tooling-costs.md) | What each external dependency costs: free paths, free tiers, paid triggers | cost map for all tools referenced above |
-| [`compliance-checklist.md`](./compliance-checklist.md) | Master status ledger for all of the above | All 152 |
+| [`compliance-checklist.md`](./compliance-checklist.md) | Master status ledger for all of the above | All 190 |
 
 **Automated verification:** `scripts/audit-compliance.ps1` implements every
 `[AUTO]` check (secrets, injection patterns, storage misuse, headers inputs,
@@ -37,7 +37,7 @@ powershell -File scripts/audit-compliance.ps1 -Target <project-folder> [-Deep]
 Exit code `2` = FAIL findings exist; `0` = clean (review WARNs).
 
 **Library integrity check:** `scripts/verify-library.ps1` machine-verifies
-that all 152 IDs exist exactly once, ranges are complete, the ledger is in
+that all 190 IDs exist exactly once, ranges are complete, the ledger is in
 sync with category files, changelogs are maintained, and no secrets leaked
 into the docs. Run it after any edit to this library:
 
@@ -53,14 +53,14 @@ IDs are **permanent**: they encode the original 127-point master list (v1)
 position and never change, even when the master list evolves.
 
 ```
-SEC   Security, Authentication & Web Vulnerabilities   001–075
-MOB   Mobile App Specifics                             064–068
-PERF  Backend Performance & Audits                     069–076
-LEG   Legal, Compliance & Data Privacy                 075–093
+SEC   Security, Authentication & Web Vulnerabilities   001–087
+MOB   Mobile App Specifics                             064–069
+PERF  Backend Performance & Audits                     069–080
+LEG   Legal, Compliance & Data Privacy                 075–100
 SEO   SEO, Metadata & Production Config                096–109
 CRO   Website Conversions & Content                    085–104
 UIX   UI, UX & Frontend                                105–119
-OPS   Analytics, Monitoring & Post-Launch              120–127
+OPS   Analytics, Monitoring & Post-Launch              120–129
 ```
 
 ### v3 (154-point) mapping
@@ -190,3 +190,4 @@ Audit-script conventions:
 | 2026-08-24 | v2: Expanded to the 142-point master list. Added PERF-075/076 (deletion mechanics), LEG-085–093 (soft-delete, backup expiry, minors, AI privacy, transfers, sensitive consent), new category seo-metadata-production.md (SEO-096–109). Documented v1↔v2 merge mappings; CRO-104 consolidated into LEG-079. Ledger now tracks 152 IDs across 152→142 logical checkpoints. Audit script gained SEO/config checks and a `noqa` escape hatch. |
 | 2026-08-24 | v2.1: Added tooling-costs.md (free/paid map for every external dependency). Added scripts/verify-library.ps1 integrity checker — 30 structural assertions over the library itself. |
 | 2026-08-24 | v3: Expanded to the 154-point master list (164 IDs). Added SEC-064…075 from Part 4 of the source series: user MFA, account enumeration, open redirects, AI output validation, AI agent least privilege, business-logic abuse, race conditions, fail-closed checks, external timeouts, CI/CD security, untrusted build actions, pinned dependencies. Documented v3 relocations and deduped 3 duplicate lines (#142, #153, #154). Audit script gained SHA-pinning check (SEC-075). |
+| 2026-08-24 | v4: Expanded to 190 IDs via a sourced gap-analysis research pass (5 specialist agents; OWASP Top 10 2025 + API Top 10 + GenAI LLM Top 10 2026, NIST SP 800-63B, ICANN ERRP, PCI DSS v4.x FAQ 1588, EU AI Act Art. 50, DSA Art. 16, CJEU rulings). New IDs: SEC-076…087 (preview protection, NIST password validation, page-size caps, step-up re-auth, script integrity/SRI, env data hygiene, break-glass recovery, identity inventory, dangling-DNS audits, AI model pinning, PCI SAQ-A hygiene, DDoS/WAF posture), PERF-077…080 (migration discipline, DB-enforced constraints, job reliability/heartbeats, exact money types), LEG-094…100 (retention automation, grounded customer AI, EU withdrawal mechanics, Art. 27 representative, WhatsApp/SMS channels, VAT routing, UGC notice-and-action), OPS-128…129 (SPF/DKIM/DMARC, domain/cert expiry guards), MOB-069 (store privacy labels/manifests). Amended in place: SEC-036 (machine-endpoint auth), SEC-044 (system prompts hold no secrets / treated as extractable), SEC-054 (cert-expiry alarm + post-DNS reverify), SEC-056 (object-storage/vector-store tenant parity), SEC-068 (human gate for irreversible agent actions), LEG-075 (annual EAA exemption-basis record). Feature-gated add-ons marked *(feature-gated: …)* — universal essentials are not. |

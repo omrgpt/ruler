@@ -1,7 +1,7 @@
 # Ruler
 
-**The ruler every AI agent measures code against.** A 154-point compliance
-master list (164 stable requirement IDs) covering security, authentication,
+**The ruler every AI agent measures code against.** A master compliance
+list (190 stable requirement IDs as of v4, 2026-08-24) covering security, authentication,
 GCC PDPL / GDPR legal compliance, SEO/production config, conversion quality,
 UI/UX, and post-launch operations — plus the automation that proves it.
 
@@ -14,10 +14,10 @@ writing a single line.
 | Path | Purpose |
 |---|---|
 | `AGENTS.md` | Entry point every agent auto-reads: governance rules + file index |
-| `docs/requirements/*.md` | The 164 requirements, each with rule text + a verification method (`[AUTO]` / `[AGENT]` / `[MANUAL]`) |
+| `docs/requirements/*.md` | The 190 requirements, each with rule text + a verification method (`[AUTO]` / `[AGENT]` / `[MANUAL]`) |
 | `docs/requirements/compliance-checklist.md` | Master ledger: status + evidence per requirement |
 | `docs/requirements/tooling-costs.md` | Free/paid map + what to reconfigure when you upgrade a plan |
-| `scripts/audit-compliance.ps1` | 28 automated checks implementing every `[AUTO]` item |
+| `scripts/audit-compliance.ps1` | 29 automated machine checks (grep/git/npm/DNS-free static layer) covering part of the `[AUTO]` items; the rest of the `[AUTO]` tags are executed as agent-run or CI probes per each row's verification column |
 | `scripts/verify-library.ps1` | 32 assertions proving the library itself is structurally sound |
 | `tests/run-repo-tests.ps1` | Full test suite: tamper-resistance, planted-violation detection, exit-code contracts, cross-file consistency |
 

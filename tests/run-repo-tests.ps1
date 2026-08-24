@@ -356,15 +356,15 @@ jobs:
     $badCostRefs = @($costRefs | Where-Object { $_ -notin $knownIds })
     Record 'D-tooling-costs.md references only real IDs' ($badCostRefs.Count -eq 0) ($badCostRefs -join ', ')
 
-    $expectedCounts = @{ SEC = 75; MOB = 5; PERF = 8; LEG = 19; SEO = 14; CRO = 20; UIX = 15; OPS = 8 }
+    $expectedCounts = @{ SEC = 87; MOB = 6; PERF = 12; LEG = 26; SEO = 14; CRO = 20; UIX = 15; OPS = 10 }
     foreach ($k in $expectedCounts.Keys) {
         $actual = @($knownIds | Where-Object { $_ -like "$k-*" }).Count
         Record ("D-checklist category count {0}={1}" -f $k, $expectedCounts[$k]) ($actual -eq $expectedCounts[$k]) "actual=$actual"
     }
 
     $rollupMap = [ordered]@{
-        'Security' = 75; 'Mobile' = 5; 'Performance' = 8; 'Legal' = 19
-        'SEO' = 14; 'Conversion' = 20; 'UI/UX' = 15; 'Ops' = 8
+        'Security' = 87; 'Mobile' = 6; 'Performance' = 12; 'Legal' = 26
+        'SEO' = 14; 'Conversion' = 20; 'UI/UX' = 15; 'Ops' = 10
     }
     $rollupOk = $true
     foreach ($k in $rollupMap.Keys) {

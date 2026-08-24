@@ -6,7 +6,7 @@
 
 .DESCRIPTION
     This is the anti-hallucination backstop for the governance system:
-    an agent (or human) claiming "all 152 requirements are tracked" is
+    an agent (or human) claiming "all 190 requirements are tracked" is
     proven right or wrong here, mechanically.
 
     Exit codes: 0 = verified, 1 = structural error, 2 = verification failed.
@@ -47,14 +47,14 @@ Write-Host (" Date: " + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'))
 Write-Host ""
 
 $categoryFiles = @{
-    'security-authentication.md' = @{ Prefix = 'SEC'; From = 1;  To = 75  }
-    'mobile.md'                  = @{ Prefix = 'MOB'; From = 64; To = 68  }
-    'backend-performance.md'     = @{ Prefix = 'PERF'; From = 69; To = 76 }
-    'legal-compliance-gcc-gdpr.md' = @{ Prefix = 'LEG'; From = 75; To = 93 }
+    'security-authentication.md' = @{ Prefix = 'SEC'; From = 1;  To = 87  }
+    'mobile.md'                  = @{ Prefix = 'MOB'; From = 64; To = 69  }
+    'backend-performance.md'     = @{ Prefix = 'PERF'; From = 69; To = 80 }
+    'legal-compliance-gcc-gdpr.md' = @{ Prefix = 'LEG'; From = 75; To = 100 }
     'seo-metadata-production.md' = @{ Prefix = 'SEO'; From = 96; To = 109 }
     'conversion-content.md'      = @{ Prefix = 'CRO'; From = 85; To = 104 }
     'ui-ux-frontend.md'          = @{ Prefix = 'UIX'; From = 105; To = 119 }
-    'analytics-monitoring.md'    = @{ Prefix = 'OPS'; From = 120; To = 127 }
+    'analytics-monitoring.md'    = @{ Prefix = 'OPS'; From = 120; To = 129 }
 }
 
 $idRowRegex      = '^\|\s*(SEC|MOB|PERF|LEG|SEO|CRO|UIX|OPS)-(\d{3})\s*\|'
@@ -118,8 +118,8 @@ if (-not (Test-Path -LiteralPath $checklistPath)) {
 }
 
 # --- Totals ----------------------------------------------------------------
-Assert-Fact "total tracked IDs = $expectedTotal (expect 164)" `
-    ($expectedTotal -eq 164 -and $allCategoryIds.Count -eq 164) `
+Assert-Fact "total tracked IDs = $expectedTotal (expect 190)" `
+    ($expectedTotal -eq 190 -and $allCategoryIds.Count -eq 190) `
     "categories yielded $($allCategoryIds.Count)"
 
 # --- v3 additions present ---------------------------------------------------

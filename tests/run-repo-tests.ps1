@@ -141,20 +141,19 @@ try {
     # a key-shaped literal (GitHub push protection would block the push).
     $fakeStripe = 'sk' + '_live_' + 'abcdefghij12345678901234'
     $fakeSecret = 'supersecret' + 'value123'
-
-    Set-Content -LiteralPath (Join-Path $trap 'src\app.js') -Encoding UTF8 -Value (@'
-const stripeKey = "
-'@ + $fakeStripe + @'";
-const clientSecret = "'@ + $fakeSecret + @'";
-localStorage.setItem("authToken", response.token);
-eval(userInput);
-console.log("login attempt", user.password);
-const cfg = { admin: "admin123" };
-function render(x) {
-  debugger;
-}
-window.addEventListener("load", () => {});
-'@)
+    $appJsLines = @(
+        ('const stripeKey = "' + $fakeStripe + '";'),
+        ('const clientSecret = "' + $fakeSecret + '";'),
+        'localStorage.setItem("authToken", response.token);',
+        'eval(userInput);',
+        'console.log("login attempt", user.password);',
+        'const cfg = { admin: "admin123" };',
+        'function render(x) {',
+        '  debugger;',
+        '}',
+        'window.addEventListener("load", () => {});'
+    )
+    Set-Content -LiteralPath (Join-Path $trap 'src\app.js') -Encoding UTF8 -Value $appJsLines
 
     Set-Content -LiteralPath (Join-Path $trap 'src\service.js') -Encoding UTF8 -Value @'
 const admin = createClient(process.env.SUPABASE_URL, process.env.SERVICE_ROLE_KEY);
@@ -400,7 +399,8 @@ jobs:
         $outside = @($tracked | Where-Object {
             $_ -notmatch '^(AGENTS\.md|README\.md|\.gitignore|\.gitattributes)$' -and
             $_ -notmatch '^docs/requirements/' -and
-            $_ -notmatch '^scripts/[^/]+\.ps1$'
+            $_ -notmatch '^scripts/[^/]+\.ps1$' -and
+            $_ -notmatch '^tests/[^/]+\.ps1$'
         })
         Record 'D-tracked files stay inside whitelist' ($outside.Count -eq 0) ($outside -join ', ')
     }

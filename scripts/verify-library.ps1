@@ -47,7 +47,7 @@ Write-Host (" Date: " + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'))
 Write-Host ""
 
 $categoryFiles = @{
-    'security-authentication.md' = @{ Prefix = 'SEC'; From = 1;  To = 63  }
+    'security-authentication.md' = @{ Prefix = 'SEC'; From = 1;  To = 75  }
     'mobile.md'                  = @{ Prefix = 'MOB'; From = 64; To = 68  }
     'backend-performance.md'     = @{ Prefix = 'PERF'; From = 69; To = 76 }
     'legal-compliance-gcc-gdpr.md' = @{ Prefix = 'LEG'; From = 75; To = 93 }
@@ -118,14 +118,21 @@ if (-not (Test-Path -LiteralPath $checklistPath)) {
 }
 
 # --- Totals ----------------------------------------------------------------
-Assert-Fact "total tracked IDs = $expectedTotal (expect 152)" `
-    ($expectedTotal -eq 152 -and $allCategoryIds.Count -eq 152) `
+Assert-Fact "total tracked IDs = $expectedTotal (expect 164)" `
+    ($expectedTotal -eq 164 -and $allCategoryIds.Count -eq 164) `
     "categories yielded $($allCategoryIds.Count)"
+
+# --- v3 additions present ---------------------------------------------------
+$v3Ids = @('SEC-064','SEC-065','SEC-066','SEC-067','SEC-068','SEC-069',
+           'SEC-070','SEC-071','SEC-072','SEC-073','SEC-074','SEC-075')
+$missingV3 = @($v3Ids | Where-Object { $_ -notin $allCategoryIds })
+Assert-Fact 'v3 additions (SEC-064..075) present' ($missingV3.Count -eq 0) `
+    $(if ($missingV3.Count) { 'missing: ' + ($missingV3 -join ', ') } else { '' })
 
 # --- v2 merge mappings present in README -----------------------------------
 $readmePath = Join-Path $LibRoot 'README.md'
 $readme = Get-Content -LiteralPath $readmePath -Raw -ErrorAction SilentlyContinue
-$requiredMappings = @('112', '113', '115', '116', '118', '127', '132', '134')
+$requiredMappings = @('112', '113', '115', '116', '118', '127', '132', '134', '154')
 $missingMaps = @($requiredMappings | Where-Object { $readme -notmatch [regex]::Escape($_) })
 Assert-Fact 'README documents v2 merge mappings' ($missingMaps.Count -eq 0) `
     $(if ($missingMaps.Count) { 'missing markers: ' + ($missingMaps -join ', ') } else { '' })

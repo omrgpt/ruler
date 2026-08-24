@@ -6,7 +6,7 @@ Markdown so **any** AI agent (Codex, Gemini CLI, Claude Code, Cursor,
 opencode) or human can read and act on it.
 
 **Master tracker:** [`compliance-checklist.md`](./compliance-checklist.md) —
-all 152 tracked IDs covering the **142-point (v2) master checklist**, with
+all 164 tracked IDs covering the **154-point (v3) master checklist**, with
 live status. Nothing is "done" until that file says so with evidence.
 
 ---
@@ -15,7 +15,7 @@ live status. Nothing is "done" until that file says so with evidence.
 
 | File | Scope | IDs |
 |---|---|---|
-| [`security-authentication.md`](./security-authentication.md) | Secrets, auth, authz, DB security, API/input hardening, web attacks, payments, rate limiting, infra config, logging, supply chain, AI safety | SEC-001 … SEC-063 (63) |
+| [`security-authentication.md`](./security-authentication.md) | Secrets, auth, authz, DB security, API/input hardening, web attacks, payments, rate limiting, infra config, logging, supply chain, AI safety, business-logic resilience, CI/CD pipeline | SEC-001 … SEC-075 (75) |
 | [`mobile.md`](./mobile.md) | Mobile bundle, secure storage, deep links, biometrics, ATT | MOB-064 … MOB-068 (5) |
 | [`backend-performance.md`](./backend-performance.md) | Query audits, N+1, indexing, connection lifecycle, blob hygiene, cascading deletions, third-party purges | PERF-069 … PERF-076 (8) |
 | [`legal-compliance-gcc-gdpr.md`](./legal-compliance-gcc-gdpr.md) | GCC PDPL (BH/AE/SA) + GDPR: policies, cookies, data rights, deletion mechanics, minors, AI/cross-border processing, breach plan | LEG-075 … LEG-093 (19) |
@@ -53,15 +53,41 @@ IDs are **permanent**: they encode the original 127-point master list (v1)
 position and never change, even when the master list evolves.
 
 ```
-SEC   Security, Authentication & Infrastructure    001–063
-MOB   Mobile App Specifics                         064–068
-PERF  Backend Performance & Audits                 069–076
-LEG   Legal, Compliance & Data Privacy             075–093
-SEO   SEO, Metadata & Production Config            096–109
-CRO   Website Conversions & Content                085–104
-UIX   UI, UX & Frontend                            105–119
-OPS   Analytics, Monitoring & Post-Launch          120–127
+SEC   Security, Authentication & Web Vulnerabilities   001–075
+MOB   Mobile App Specifics                             064–068
+PERF  Backend Performance & Audits                     069–076
+LEG   Legal, Compliance & Data Privacy                 075–093
+SEO   SEO, Metadata & Production Config                096–109
+CRO   Website Conversions & Content                    085–104
+UIX   UI, UX & Frontend                                105–119
+OPS   Analytics, Monitoring & Post-Launch              120–127
 ```
+
+### v3 (154-point) mapping
+
+v3 reorganized sections (IDs are permanent — nothing moved or renumbered)
+and added 12 genuinely new items, which became:
+
+| v3 item | Stable ID | Requirement |
+|---|---|---|
+| 5 | SEC-064 | User-facing MFA offered (TOTP), enforced for admins |
+| 8 | SEC-065 | Account enumeration blocked on login/signup/reset |
+| 23 | SEC-066 | Open redirects prevented |
+| 36 | SEC-067 | AI output schema-validated before use |
+| 37 | SEC-068 | AI agents least-privileged |
+| 55 | SEC-069 | Business-logic abuse tested and blocked |
+| 56 | SEC-070 | Race conditions prevented (atomic transactions/locks) |
+| 57 | SEC-071 | Security checks fail closed |
+| 58 | SEC-072 | Strict timeouts on external calls and queries |
+| 59 | SEC-073 | CI/CD pipelines secured |
+| 60 | SEC-074 | Third-party build actions audited |
+| 61 | SEC-075 | Build dependencies pinned (SHAs + lockfiles) |
+
+v3 items that were relocations of existing coverage: #67–69 → SEC-007/008/009,
+#75–77 → PERF-074/075/076, #78–96 → LEG-075…093, #97 → SEC-012,
+#137–144 → SEC-010/034/035/042/043/036/014/013, #145–152 → OPS-120…127.
+v3 duplicates removed: #142 = #27 (SEC-036), #153 = #25 (SEC-032),
+#154 = #26 (SEC-033).
 
 ### v2 (142-point) mapping
 
@@ -163,3 +189,4 @@ Audit-script conventions:
 | 2026-08-24 | v1: Initial import of the 127-point master checklist into 7 category files with stable IDs and verification methods. Added audit script and master tracker. |
 | 2026-08-24 | v2: Expanded to the 142-point master list. Added PERF-075/076 (deletion mechanics), LEG-085–093 (soft-delete, backup expiry, minors, AI privacy, transfers, sensitive consent), new category seo-metadata-production.md (SEO-096–109). Documented v1↔v2 merge mappings; CRO-104 consolidated into LEG-079. Ledger now tracks 152 IDs across 152→142 logical checkpoints. Audit script gained SEO/config checks and a `noqa` escape hatch. |
 | 2026-08-24 | v2.1: Added tooling-costs.md (free/paid map for every external dependency). Added scripts/verify-library.ps1 integrity checker — 30 structural assertions over the library itself. |
+| 2026-08-24 | v3: Expanded to the 154-point master list (164 IDs). Added SEC-064…075 from Part 4 of the source series: user MFA, account enumeration, open redirects, AI output validation, AI agent least privilege, business-logic abuse, race conditions, fail-closed checks, external timeouts, CI/CD security, untrusted build actions, pinned dependencies. Documented v3 relocations and deduped 3 duplicate lines (#142, #153, #154). Audit script gained SHA-pinning check (SEC-075). |

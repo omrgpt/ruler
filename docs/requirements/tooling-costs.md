@@ -86,3 +86,26 @@ a surprise bill.
 **Hard rule:** every dollar above maps to a requirement ID — record the
 confirmed price + plan name in that ID's Evidence cell so future agents know
 what's already provisioned vs still needed.
+
+---
+
+## 5. When you upgrade: settings that must flip with the plan
+
+Paying changes behavior. Whenever a service moves from free tier to paid,
+these configuration changes must be made and recorded against the listed
+requirement IDs — an upgrade without the config flip wastes the money.
+
+| Upgrade | Flip these settings / behaviors | Requirement IDs |
+|---|---|---|
+| UptimeRobot free → paid | Raise check interval 5-min → 1-min; enable SMS/phone alert channel; add monitors for health endpoints | OPS-120 |
+| Sentry free → Team | Keep PII scrubbing ON (never disable for quota); raise rate limits; enable release-health + alert rules routing to human channel | OPS-121, SEC-013, SEC-049 |
+| Supabase/Neon free → Pro | Enable PITR / extended backup retention; confirm restore window covers LEG-086's deletion-expiry promise; re-run restore drill | SEC-050, LEG-086 |
+| Vercel/Netlify Hobby → Pro | Commercial-usage compliance; enable team roles + deploy previews protection; branch/deploy protection on production | SEC-057, SEC-034 |
+| Cloudflare free → Pro/Business | Add WAF managed rules + more rate-limit rules; Turnstile stays free — do not pay for it | SEC-032, SEC-052 |
+| Resend/Brevo free → paid | Verify dedicated sending domain (SPF/DKIM/DMARC); enable suppression-list sync; confirm unsubscribe webhook still honored | SEC-054, OPS-125, LEG-083 |
+| GitHub Free → Team | Branch protection + required reviews now available on private repos — enable for main; add CODEOWNERS | SEC-057 |
+| AI APIs (any provider) | On first paid tier: request/confirm ZDR in writing (LEG-090 evidence); set hard monthly spend caps + billing alerts before first production call | LEG-090, SEC-062, SEC-046 |
+| Any analytics upgrade | Re-verify consent gating still suppresses tracking pre-consent — plan changes must not silently re-enable tags | LEG-079, OPS-124 |
+
+**Rule:** the upgrade task isn't done when the invoice is paid — it's done
+when the Evidence cells for the affected IDs show the post-upgrade config.

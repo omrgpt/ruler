@@ -1,8 +1,8 @@
 # Security, Authentication & Infrastructure Requirements
 
-**Scope:** All server, client, database, infrastructure, payment, and AI code
-in every project in this workspace.
-**Items:** SEC-001 … SEC-063 (63 requirements).
+**Scope:** All server, client, database, infrastructure, payment, pipeline,
+and AI code in every project in this workspace.
+**Items:** SEC-001 … SEC-075 (75 requirements).
 **Legend:** `[AUTO]` script-checked · `[AGENT]` agent-verified w/ evidence ·
 `[MANUAL]` human/cloud-console action. See [README](./README.md).
 
@@ -30,6 +30,8 @@ in every project in this workspace.
 |---|---|---|
 | SEC-004 | Authentication is enforced **on the server** for every protected route/resource. Hiding UI elements is never access control; an unauthenticated API call must fail with 401 regardless of what the frontend shows. | `[AGENT]` attempt unauthenticated curl to each protected endpoint, paste result as evidence |
 | SEC-026 | Password reset uses single-use, short-TTL (≤15 min) tokens tied to the requesting account, invalidated on use and on password change; responses never reveal whether an email exists (no user enumeration). Reset links are HTTPS-only. | `[AGENT]` test flow: reuse token, expired token, unknown-email response parity |
+| SEC-064 | User-facing MFA offered and encouraged (not just infra 2FA): TOTP authenticator support at minimum, enforced for admin/privileged roles, encouraged via nudge for all users; backup codes provided; MFA enrollment and challenge flows rate-limited. | `[AGENT]` enroll test account in TOTP → login challenge demonstrated; recovery path tested |
+| SEC-065 | Account enumeration prevented across ALL identity flows: login ("invalid email or password" for both cases), signup (neutral "check your email" flow), and reset (identical response + timing regardless of account existence). Response timing normalized where timing differences leak account existence. Pairs with SEC-026. | `[AGENT]` compare responses+timing for existing vs nonexistent accounts on login/signup/reset |
 | SEC-027 | Sessions expire (idle + absolute timeout), rotate IDs on login/privilege change, and are destroyed server-side on logout. Session fixation is impossible because IDs never persist across auth state changes. | `[AGENT]` demonstrate logout invalidation + rotation behavior |
 | SEC-028 | Session tokens are stored in `Secure`, `HttpOnly`, `SameSite=Lax/Strict` cookies. localStorage/sessionStorage is forbidden for tokens (XSS-readable). | `[AUTO]` audit scan for token-in-localStorage patterns; `[AGENT]` inspect Set-Cookie flags |
 | SEC-029 | Passwords are hashed with bcrypt (cost ≥12) or argon2id. No MD5/SHA1/plain. Rehash-on-login upgrades legacy hashes automatically. | `[AGENT]` cite hashing call site; `[AUTO]` reject `md5(`/`sha1(` near password fields |
@@ -81,6 +83,7 @@ in every project in this workspace.
 | SEC-023 | File uploads locked down server-side: extension AND MIME AND magic-byte checks, size cap, randomized storage names, never executable, served from a separate domain/path with `Content-Disposition` where relevant. | `[AGENT]` upload polyglot/executable test → rejected; cite validator lines |
 | SEC-024 | Path traversal blocked: normalize+resolve user-influenced paths and verify containment within the intended base directory before any fs/storage access. | `[AGENT]` `../../etc/passwd`-style probes on any download/read endpoints |
 | SEC-025 | SSRF blocked: outbound requests derived from user input target-allowlist domains, block link-local/private IP ranges (incl. DNS-rebinding resolution re-check), disable redirect-following to internal ranges. | `[AGENT]` webhook/import URL probes to `169.254.x.x`, `localhost`, RFC1918 |
+| SEC-066 | Open redirects prevented: any redirect driven by user input (`?next=`, `?returnUrl=`) validates against an exact origin/path allowlist — relative-paths-only or explicit host matching, never raw `Location` passthrough. Redirect chains via hosted link shorteners on your domain equally validated. | `[AGENT]` probe redirect endpoints with `https://evil.com`, `//evil.com`, `javascript:` → all rejected |
 | SEC-059 | Command injection eliminated: no shell string composition from user input; prefer native APIs/libraries; unavoidable exec uses array-form args + allowlisted binaries. | `[AUTO]` `exec(`/`system(`/backtick-call scan; `[AGENT]` payload probes |
 | SEC-060 | Insecure deserialization forbidden: no language-native object deserialization of untrusted data (PHP unserialize, Java readObject, Python pickle, Ruby Marshal). Use JSON/dataclass schemas with validation. | `[AGENT]` locate deserialization sites; confirm schema-based parsing |
 
@@ -152,6 +155,29 @@ in every project in this workspace.
 | SEC-044 | Prompt injection defended: user input never concatenated into system prompts; system/user roles strictly separated; tool/function calls validated against allowlists; LLM output treated as untrusted data (never executed/rendered raw). | `[AGENT]` injection probes ("ignore instructions…", fake tool syntax) → contained |
 | SEC-045 | Every AI endpoint requires authentication AND authorization like any other API; model/provider API keys server-side only; per-endpoint scopes so a leaked user token can't invoke arbitrary expensive models. | `[AGENT]` unauthenticated AI call → 401; low-privilege call to restricted model → 403 |
 | SEC-046 | Per-user AI usage capped: quota/rate/token budget per user and per plan, tracked server-side, with graceful limit responses. Prevents single-user credit draining and runaway loops. | `[AGENT]` exceed-quota test → clean 429/limit message; cite counter implementation |
+| SEC-067 | AI output schema-validated before use: model responses parsed against an expected schema (JSON schema/structured output/zod) and rejected on violation — never string-matched into execution, SQL, file paths, or rendered raw. Invalid output triggers a safe fallback path, not an exception leak. Pairs with SEC-044 (output = untrusted) and SEC-060. | `[AGENT]` feed malformed/adversarial model output through the parser → rejection path shown |
+| SEC-068 | AI agents run least-privileged: any agent/tool-calling layer gets scoped, revocable credentials — read-only DB roles by default, per-tool allowlists, no shell/root, no cross-tenant access, spending caps per agent (SEC-046/SEC-062). An agent's blast radius is auditable: list every credential/tool it can touch. | `[AGENT]` produce agent-capability matrix (tools × permissions) for each AI feature |
+
+---
+
+## 13. Business Logic, Concurrency & Resilience
+
+| ID | Requirement | Verification |
+|---|---|---|
+| SEC-069 | Business-logic abuse tested and blocked: every workflow with value (discount codes, referral credits, free tiers, trial resets, quantity limits, invite systems) is probed for exploitation via unconventional sequences — reuse, stacking, negative values, self-referral, replayed flows. Server enforces the intended business rules, not just input formats. | `[AGENT]` abuse matrix per workflow: attempt stacking/reuse/negative/sequence exploits → all rejected or clamped server-side |
+| SEC-070 | Race conditions prevented where money/inventory/limits are involved: balance debits, coupon redemption, stock decrement, quota consumption, and one-per-user actions use DB transactions with row locks or atomic conditional updates (`UPDATE … WHERE balance >= x`), never read-then-write across requests. Concurrent-request tests prove single execution. | `[AGENT]` fire N parallel requests against a limited resource → exactly-once behavior shown (e.g., 2 concurrent redemptions of 1-use code) |
+| SEC-071 | Security checks fail CLOSED: every authz/auth/permission decision defaults to DENY on error, timeout, or missing data — exceptions never grant access. Feature flags and entitlement checks resolve to the restrictive branch when their source is unavailable. | `[AGENT]` simulate check failure (throw/unreachable provider) in staging → access denied, error handled, no grant |
+| SEC-072 | Strict timeouts on all outbound calls: external HTTP clients, AI providers, payment gateways, and DB queries have explicit connect+read timeouts (seconds, not none) plus retry caps with jitter — no request path can hang forever and pin workers into DoS-by-slow-neighbor. | `[AGENT]` cite timeout configuration per client; staging test with a deliberately slow endpoint → circuit opens |
+
+---
+
+## 14. CI/CD & Pipeline Security
+
+| ID | Requirement | Verification |
+|---|---|---|
+| SEC-073 | Deployment pipelines secured: workflow files live only on protected branches, secrets via masked CI variables (never inline), deployments require review for production targets, and pipeline tokens are minimal-scope + short-lived. Unauthorized workflow edits cannot reach production. | `[MANUAL]` branch protection + environment protection rules recorded; `[AGENT]` inventory workflow triggers vs protection |
+| SEC-074 | Third-party build actions audited: every GitHub Action/CI plugin reviewed (publisher, popularity, pinned source) before adoption; new/low-trust actions rejected. Changes to build actions get the same review as code (SEC-057). | `[AGENT]` action inventory table: name → publisher → trust rationale |
+| SEC-075 | Build dependencies pinned: CI actions pinned to full-length commit SHAs (not mutable tags like `@v3`), lockfiles committed and used in CI (`npm ci`), and build tooling versions fixed — a renamed tag or published-later dependency cannot silently inject code into builds. | `[AUTO]` audit scan flags `uses:` lines without SHA pinning; `[AGENT]` confirm `npm ci` in pipeline |
 
 ---
 
@@ -171,3 +197,4 @@ control, owner, expiry date.
 |---|---|
 | 2026-08-24 | Initial import: 63 security items organized into 12 sections with stable IDs and verification methods. |
 | 2026-08-24 | v2: SEC-003 short-lived credentials emphasis; SEC-018 wording strengthened to schema-based sanitization with unexpected-field rejection (v2 item 18). No IDs changed. |
+| 2026-08-24 | v3: Added 12 items from Part 4 of the source series — SEC-064 (user MFA), SEC-065 (account enumeration), SEC-066 (open redirects), SEC-067 (AI output validation), SEC-068 (AI agent least privilege), SEC-069 (business-logic abuse), SEC-070 (race conditions), SEC-071 (fail-closed checks), SEC-072 (external timeouts), SEC-073 (CI/CD security), SEC-074 (untrusted build actions), SEC-075 (pinned build deps). New sections 13–14. Total now 75. |

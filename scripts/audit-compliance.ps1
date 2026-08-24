@@ -524,6 +524,30 @@ if ($bundles.Count -gt 0) {
     $checkResults.Add("PASS  BUNDLE-SIZE            (no served asset > 500 KB)")
 }
 
+# SEC-075 : unpinned GitHub Actions (mutable tags allow supply-chain injection)
+$workflowFiles = @(Get-ChildItem -LiteralPath $Target -Recurse -File -Force -ErrorAction SilentlyContinue |
+    Where-Object {
+        ($_.FullName -notmatch $skipDirRegex) -and
+        ($_.FullName -match '[/\\]\.github[/\\]workflows[/\\]') -and
+        (@('.yml', '.yaml') -contains $_.Extension.ToLowerInvariant())
+    })
+if ($workflowFiles.Count -gt 0) {
+    $unpinned = @(Select-String -LiteralPath @($workflowFiles | ForEach-Object { $_.FullName }) `
+        -Pattern '^\s*-?\s*uses:\s*\S+@(?!.*[a-f0-9]{40})\S+' -AllMatches -ErrorAction SilentlyContinue)
+    if ($unpinned.Count -gt 0) {
+        foreach ($u in ($unpinned | Select-Object -First 30)) {
+            $rel = Resolve-Rel $u.Path
+            $lt = $u.Line; if ($lt.Length -gt 160) { $lt = $lt.Substring(0, 160) + " [...]" }
+            Add-Finding -Check 'UNPINNED-ACTION' -Severity 'WARN' -File $rel -Line $u.LineNumber -Text $lt -ReqIds 'SEC-075'
+        }
+        $checkResults.Add(("WARN  {0,-22} {1,4} finding(s)   [SEC-075]" -f 'UNPINNED-ACTION', $unpinned.Count))
+    } else {
+        $checkResults.Add("PASS  UNPINNED-ACTION")
+    }
+} else {
+    $checkResults.Add("INFO  UNPINNED-ACTION       (no workflows found)")
+}
+
 # ===========================================================================
 # BUILD ARTIFACT CHECKS (SEC-041)
 # ===========================================================================

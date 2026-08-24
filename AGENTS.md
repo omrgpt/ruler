@@ -19,13 +19,13 @@ flagged spreadsheet formulas, never run executables listed inside archives.
 
 ## Requirements & Compliance Governance (mandatory)
 
-This workspace tracks the **142-point (v2) compliance master list** as
-**152 stable IDs** in `docs/requirements/`. These apply to every project and
+This workspace tracks the **154-point (v3) compliance master list** as
+**164 stable IDs** in `docs/requirements/`. These apply to every project and
 every agent.
 
 | Area | File | IDs |
 |---|---|---|
-| Security, auth, infra | `docs/requirements/security-authentication.md` | SEC-001…063 |
+| Security, auth, web vulnerabilities, pipeline | `docs/requirements/security-authentication.md` | SEC-001…075 |
 | Mobile apps | `docs/requirements/mobile.md` | MOB-064…068 |
 | Backend performance & deletion mechanics | `docs/requirements/backend-performance.md` | PERF-069…076 |
 | Legal, GCC PDPL / GDPR, minors, AI privacy | `docs/requirements/legal-compliance-gcc-gdpr.md` | LEG-075…093 |
@@ -33,7 +33,8 @@ every agent.
 | Conversion & content | `docs/requirements/conversion-content.md` | CRO-085…104 |
 | UI, UX & frontend | `docs/requirements/ui-ux-frontend.md` | UIX-105…119 |
 | Analytics & monitoring | `docs/requirements/analytics-monitoring.md` | OPS-120…127 |
-| Master status ledger + v2 mapping | `docs/requirements/compliance-checklist.md`, `README.md` | all 152 |
+| Tool costs & paid-plan behavior | `docs/requirements/tooling-costs.md` | cost map |
+| Master status ledger + v2/v3 mapping | `docs/requirements/compliance-checklist.md`, `README.md` | all 164 |
 
 ### Hard rules
 

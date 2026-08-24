@@ -1,13 +1,13 @@
-# Master Compliance Checklist — 142-Point Master List (v2)
+# Master Compliance Checklist — 154-Point Master List (v3)
 
 **The ledger.** Every requirement's live status and evidence lives here.
 An item is `done` ONLY when this row says ✅ **and** evidence is recorded.
 
-The v2 master list contains **142 checkpoints**. This library tracks them as
-**152 stable IDs**: some v2 lines merged several older points (those IDs stay
-active and are satisfied together), and granular splits were kept where they
-add verification value. See the mapping notes under each section header and
-the full map in [README](./README.md).
+The v3 master list contains **154 checkpoints**. This library tracks them as
+**164 stable IDs**: v3's reorganization moved items between sections (IDs are
+permanent — they didn't move), three v3 lines were duplicates and were
+deduped (#142 = #27, #153 = #25, #154 = #26), and 12 genuinely new items
+became SEC-064…075. See the mapping in [README](./README.md).
 
 ## Status legend
 
@@ -24,7 +24,7 @@ screenshot/console reference.
 
 ---
 
-## 🔐 Security, Authentication & Infrastructure (63) — v2 items 1–63
+## 🔐 Security, Authentication & Web Vulnerabilities (75) — v3 items 1–61 + pipeline additions
 [security-authentication.md](./security-authentication.md)
 
 ### Secrets & Key Management
@@ -47,6 +47,8 @@ screenshot/console reference.
 |---|---|---|---|
 | SEC-004 | Auth enforced server-side, not UI-only | ☐ | |
 | SEC-026 | Password reset: single-use, TTL ≤15min, no enumeration | ☐ | |
+| SEC-064 | User-facing MFA (TOTP) offered; enforced for admins | ☐ | |
+| SEC-065 | Account enumeration blocked on login/signup/reset (generic responses + timing) | ☐ | |
 | SEC-027 | Sessions expire, rotate, server-side destroy on logout | ☐ | |
 | SEC-028 | Tokens in Secure/HttpOnly/SameSite cookies (not localStorage) | ☐ | |
 | SEC-029 | bcrypt ≥12 / argon2id password hashing | ☐ | |
@@ -90,6 +92,7 @@ screenshot/console reference.
 | SEC-023 | File uploads: type+magic-byte+size checks, safe storage | ☐ | |
 | SEC-024 | Path traversal blocked (containment verified) | ☐ | |
 | SEC-025 | SSRF blocked (allowlist, private-range denial) | ☐ | |
+| SEC-066 | Open redirects prevented (allowlist-validated redirects) | ☐ | |
 | SEC-059 | Command injection eliminated | ☐ | |
 | SEC-060 | No native deserialization of untrusted data | ☐ | |
 
@@ -149,6 +152,25 @@ screenshot/console reference.
 | SEC-044 | Prompt injection defended; LLM output untrusted | ☐ | |
 | SEC-045 | AI endpoints authed/authz'd; keys server-side | ☐ | |
 | SEC-046 | Per-user AI usage caps enforced server-side | ☐ | |
+| SEC-067 | AI output schema-validated before execution/render | ☐ | |
+| SEC-068 | AI agents least-privileged (scoped tools/credentials) | ☐ | |
+
+### Business Logic, Concurrency & Resilience
+
+| ID | Requirement (short) | Status | Evidence / Notes |
+|---|---|---|---|
+| SEC-069 | Business-logic abuse tested (discounts, credits, sequences) | ☐ | |
+| SEC-070 | Race conditions prevented (atomic ops, locks) | ☐ | |
+| SEC-071 | Security checks fail CLOSED on error/timeout | ☐ | |
+| SEC-072 | Strict timeouts on external APIs + DB queries | ☐ | |
+
+### CI/CD & Pipeline Security
+
+| ID | Requirement (short) | Status | Evidence / Notes |
+|---|---|---|---|
+| SEC-073 | Deployment pipelines secured (review-gated, masked secrets) | ☐ | |
+| SEC-074 | Third-party build actions vetted before adoption | ☐ | |
+| SEC-075 | Build deps pinned (SHA-pinned actions, lockfile `npm ci`) | ☐ | |
 
 ---
 
@@ -333,7 +355,7 @@ Mapping: 124←105 · 125←106 · 126←107 · 127←108+109 · 128←110 · 12
 
 | Section | IDs | ✅ | 🔶 | ⛔ | ☐ | ➖ |
 |---|---|---|---|---|---|---|
-| Security | 63 | | | | 63 | |
+| Security | 75 | | | | 75 | |
 | Mobile | 5 | | | | 5 | |
 | Performance | 8 | | | | 8 | |
 | Legal | 19 | | | | 19 | |
@@ -341,7 +363,8 @@ Mapping: 124←105 · 125←106 · 126←107 · 127←108+109 · 128←110 · 12
 | Conversion | 20 | | | | 19 | 1 |
 | UI/UX | 15 | | | | 15 | |
 | Ops | 8 | | | | 8 | |
-| **Total** | **152** | | | | **151** | **1** |
+| **Total** | **164** | | | | **163** | **1** |
 
-*152 ledger IDs cover the v2 master list's 142 checkpoints via the merge
-mappings noted above.*
+*164 ledger IDs cover the v3 master list's 154 checkpoints: 12 new items
+(SEC-064…075) + v3's section reorganization (IDs permanent, unmoved) + 3
+deduped duplicates (#142, #153, #154) + the v2 merge mappings noted above.*

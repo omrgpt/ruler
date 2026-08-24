@@ -34,6 +34,11 @@
 /scripts/*
 !/scripts/*.ps1
 
+# --- tests (PowerShell test suites ONLY) ---
+!/tests/
+/tests/*
+!/tests/*.ps1
+
 # --- junk, anywhere ---
 *.log
 *.tmp

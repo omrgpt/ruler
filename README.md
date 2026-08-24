@@ -19,6 +19,7 @@ writing a single line.
 | `docs/requirements/tooling-costs.md` | Free/paid map + what to reconfigure when you upgrade a plan |
 | `scripts/audit-compliance.ps1` | 28 automated checks implementing every `[AUTO]` item |
 | `scripts/verify-library.ps1` | 32 assertions proving the library itself is structurally sound |
+| `tests/run-repo-tests.ps1` | Full test suite: tamper-resistance, planted-violation detection, exit-code contracts, cross-file consistency |
 
 ## Design principles
 

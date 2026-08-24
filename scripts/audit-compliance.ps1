@@ -193,7 +193,7 @@ Write-Banner "Repository checks"
 if (-not $SkipGit) {
     $gitDir = Join-Path $Target '.git'
     if (Test-Path -LiteralPath $gitDir) {
-        $trackedEnvs = @(& git -C $Target ls-files --name-only 2>$null |
+        $trackedEnvs = @(& git -C $Target ls-files 2>$null |
             Where-Object {
                 $leaf = Split-Path $_ -Leaf
                 ($leaf -like '.env*' -and $leaf -notlike '*.example' -and $leaf -notlike '*.template') -or
@@ -236,8 +236,10 @@ if (-not $SkipGit) {
 Write-Banner "Source code scans"
 
 # SEC-001 / SEC-003 / SEC-016 : high-confidence third-party token formats
+# NOTE: provider prefixes use both hyphen and underscore forms in the wild
+# (sk_live_... Stripe, sk-live-... rare) - both are matched.
 Invoke-GrepCheck -Name 'SECRET-TOKENS' -ReqIds 'SEC-001, SEC-003, SEC-016' -Severity 'FAIL' `
-    -Pattern 'sk-(live|test)-[0-9a-zA-Z]{12,}|rk-(live|test)-[0-9a-zA-Z]{12,}|AKIA[0-9A-Z]{16}|ASIA[0-9A-Z]{16}|ghp_[0-9a-zA-Z]{30,}|gho_[0-9a-zA-Z]{30,}|github_pat_[0-9a-zA-Z_]{30,}|xox[bpars]-[0-9a-zA-Z-]{18,}|glpat-[0-9a-zA-Z_-]{18,}|sk-[a-f0-9]{32,}|AIza[0-9A-Za-z_-]{30,}|eyJhbGciOi[A-Za-z0-9_-]{40,}\.eyJ[A-Za-z0-9_-]{20,}\.|-----BEGIN [A-Z ]*PRIVATE KEY-----'
+    -Pattern 'sk[-_](live|test)[-_][0-9a-zA-Z]{12,}|rk[-_](live|test)[-_][0-9a-zA-Z]{12,}|AKIA[0-9A-Z]{16}|ASIA[0-9A-Z]{16}|ghp_[0-9a-zA-Z]{30,}|gho_[0-9a-zA-Z]{30,}|github_pat_[0-9a-zA-Z_]{30,}|xox[bpars]-[0-9a-zA-Z-]{18,}|glpat-[0-9a-zA-Z_-]{18,}|sk-[a-f0-9]{32,}|AIza[0-9A-Za-z_-]{30,}|eyJhbGciOi[A-Za-z0-9_-]{40,}\.eyJ[A-Za-z0-9_-]{20,}\.|-----BEGIN [A-Z ]*PRIVATE KEY-----'
 
 # SEC-001 / SEC-003 : generic secret-looking assignments (heuristic -> WARN for triage)
 Invoke-GrepCheck -Name 'SECRET-ASSIGNMENT' -ReqIds 'SEC-001, SEC-003' -Severity 'WARN' `
@@ -426,7 +428,7 @@ if ($h1Issues -gt 0) {
 # SEO-098 / SEO-100 / SEO-101 : site-wide presence of OG tags, canonical, structured data
 if ($htmlFiles.Count -gt 0) {
     $htmlPaths = @($htmlFiles | ForEach-Object { $_.FullName })
-    $ogHits    = @(Select-String -LiteralPath $htmlPaths -Pattern 'og:(title|image|description)["'']?\s*=' -AllMatches -ErrorAction SilentlyContinue)
+    $ogHits    = @(Select-String -LiteralPath $htmlPaths -Pattern '(property|name)\s*=\s*["''](og:|twitter:)' -AllMatches -ErrorAction SilentlyContinue)
     $canonHits = @(Select-String -LiteralPath $htmlPaths -Pattern 'rel\s*=\s*[''\"]canonical' -AllMatches -ErrorAction SilentlyContinue)
     $ldHits    = @(Select-String -LiteralPath $htmlPaths -Pattern 'application/ld\+json' -AllMatches -ErrorAction SilentlyContinue)
 
@@ -591,6 +593,9 @@ if ($Deep) {
     } else {
         $pkgFiles = @(Get-ChildItem -LiteralPath $Target -Recurse -File -Filter 'package.json' -ErrorAction SilentlyContinue |
             Where-Object { $_.FullName -notmatch $skipDirRegex })
+        if ($pkgFiles.Count -eq 0) {
+            $checkResults.Add("SKIP  NPM-AUDIT              (no package.json found)")
+        }
         $auditedProjects = 0
         foreach ($pf in $pkgFiles) {
             $projDir = Split-Path $pf.FullName -Parent

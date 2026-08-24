@@ -141,7 +141,7 @@ Assert-Fact 'README documents v2 merge mappings' ($missingMaps.Count -eq 0) `
 $secretHits = @()
 Get-ChildItem -LiteralPath $LibRoot -Filter '*.md' -File | ForEach-Object {
     $hits = @(Select-String -LiteralPath $_.FullName -Pattern `
-        'sk-(live|test)-[0-9a-zA-Z]{12,}|AKIA[0-9A-Z]{16}|ghp_[0-9a-zA-Z]{30,}|-----BEGIN [A-Z ]*PRIVATE KEY-----' `
+        'sk[-_](live|test)[-_][0-9a-zA-Z]{12,}|AKIA[0-9A-Z]{16}|ghp_[0-9a-zA-Z]{30,}|-----BEGIN [A-Z ]*PRIVATE KEY-----' `
         -ErrorAction SilentlyContinue)
     foreach ($h in $hits) {
         $secretHits += ('{0}:{1}' -f $_.Name, $h.LineNumber)

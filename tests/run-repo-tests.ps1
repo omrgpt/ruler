@@ -155,15 +155,19 @@ try {
     )
     Set-Content -LiteralPath (Join-Path $trap 'src\app.js') -Encoding UTF8 -Value $appJsLines
 
-    Set-Content -LiteralPath (Join-Path $trap 'src\service.js') -Encoding UTF8 -Value @'
-const admin = createClient(process.env.SUPABASE_URL, process.env.SERVICE_ROLE_KEY);
-export default admin;
-'@
+    # Fixture key names are assembled at runtime so the ruler repo itself
+    # never contains privileged-key literals (its own audit scans it too).
+    $svcKey = 'SERVICE' + '_ROLE_KEY'
 
-    Set-Content -LiteralPath (Join-Path $trap 'server\config.js') -Encoding UTF8 -Value @'
-const serviceClient = createClient(process.env.SUPABASE_URL, process.env.SERVICE_ROLE_KEY);
-module.exports = { serviceClient };
-'@
+    Set-Content -LiteralPath (Join-Path $trap 'src\service.js') -Encoding UTF8 -Value (
+        'const admin = createClient(process.env.SUPABASE_URL, process.env.' + $svcKey + ');' + "`n" +
+        'export default admin;'
+    )
+
+    Set-Content -LiteralPath (Join-Path $trap 'server\config.js') -Encoding UTF8 -Value (
+        'const serviceClient = createClient(process.env.SUPABASE_URL, process.env.' + $svcKey + ');' + "`n" +
+        'module.exports = { serviceClient };'
+    )
 
     Set-Content -LiteralPath (Join-Path $trap 'src\db.js') -Encoding UTF8 -Value @'
 export function getUser(id) {

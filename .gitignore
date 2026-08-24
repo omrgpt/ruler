@@ -1,0 +1,31 @@
+# ============================================================
+# Governance HQ repository
+# Tracks ONLY the requirements/compliance system. All product
+# projects living beside it in this workspace are intentionally
+# untracked here (they get their own repos).
+#
+# Pattern: ignore everything at root, then whitelist the
+# governance set explicitly.
+# ============================================================
+
+/*
+
+# --- governance core ---
+!/.gitignore
+!/AGENTS.md
+!/README.md
+
+# --- requirements library ---
+!/docs/
+!/docs/requirements/
+!/docs/requirements/**
+
+# --- automation ---
+!/scripts/
+!/scripts/*.ps1
+
+# --- local junk never wanted anywhere ---
+*.log
+*.tmp
+.DS_Store
+Thumbs.db

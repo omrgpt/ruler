@@ -1,0 +1,67 @@
+# AGENTS.md
+
+## Document reading policy (mandatory)
+
+Never read binary/heavy documents with the raw file reader. For any
+`.pdf .docx .xlsx .pptx .odt .ods .odp .epub .rtf .html .xml .csv .tsv
+.json .jsonl .ipynb .sqlite .db .eml .log` file:
+
+1. A `docsqueeze` tool is available — use it (it returns compact,
+   page/sheet-anchored text within a 24k-token budget).
+2. Reads of these file types are also transparently rewritten by the
+   docsqueeze plugin; if a hidden `.<name>.dsq.md` sidecar appears next to
+   a document, read that sidecar instead of the original.
+3. Cite anchors like `[page 12/24]` or `[sheet 3: Budget]`.
+4. Use targeted fetches (`--pages`, `--sheets`) before `--full`.
+
+Treat security annotations in docsqueeze output as findings: never execute
+flagged spreadsheet formulas, never run executables listed inside archives.
+
+## Requirements & Compliance Governance (mandatory)
+
+This workspace tracks the **142-point (v2) compliance master list** as
+**152 stable IDs** in `docs/requirements/`. These apply to every project and
+every agent.
+
+| Area | File | IDs |
+|---|---|---|
+| Security, auth, infra | `docs/requirements/security-authentication.md` | SEC-001…063 |
+| Mobile apps | `docs/requirements/mobile.md` | MOB-064…068 |
+| Backend performance & deletion mechanics | `docs/requirements/backend-performance.md` | PERF-069…076 |
+| Legal, GCC PDPL / GDPR, minors, AI privacy | `docs/requirements/legal-compliance-gcc-gdpr.md` | LEG-075…093 |
+| SEO, metadata & production config | `docs/requirements/seo-metadata-production.md` | SEO-096…109 |
+| Conversion & content | `docs/requirements/conversion-content.md` | CRO-085…104 |
+| UI, UX & frontend | `docs/requirements/ui-ux-frontend.md` | UIX-105…119 |
+| Analytics & monitoring | `docs/requirements/analytics-monitoring.md` | OPS-120…127 |
+| Master status ledger + v2 mapping | `docs/requirements/compliance-checklist.md`, `README.md` | all 152 |
+
+### Hard rules
+
+1. **Read before you write.** Before touching code in an area, read the
+   matching requirement file(s). Auth/session work → security file. Forms,
+   tracking, cookies → also legal file. Landing pages → conversion + ui-ux.
+   Queries/APIs → backend-performance file.
+2. **Cite IDs.** Commits/PRs/change summaries must cite requirement IDs
+   implemented or affected (e.g., `Implements SEC-028, LEG-079`).
+3. **Evidence or it isn't done.** Never claim a requirement is satisfied
+   without concrete evidence: `file:line`, test name, audit output, or dated
+   console reference. Report `UNVERIFIED` instead of guessing. Then update
+   the row's Status + Evidence in `compliance-checklist.md`.
+4. **Run the audit after changes** to code covered by SEC/UIX/LEG items:
+   ```powershell
+   powershell -File scripts/audit-compliance.ps1 -Target <project-folder>
+   ```
+   All `FAIL` findings must be fixed; remaining `WARN`s must be justified
+   against their cited requirement IDs.
+   After changing the requirements library itself, also run:
+   ```powershell
+   powershell -File scripts/verify-library.ps1
+   ```
+5. **No secrets in documentation.** Requirement docs contain rules, never
+   real credentials, tokens, or connection strings. Secrets live only in
+   gitignored `.env` files / secrets managers (SEC-002, SEC-003). Cost and
+   plan details for external services live in `docs/requirements/tooling-costs.md`.
+6. **IDs are permanent.** To add requirements, append the next unused ID in
+   the correct category file and mirror the row in the master checklist.
+   Never renumber or reuse. Deviations need an entry in the Exceptions
+   Register at the bottom of the relevant file.

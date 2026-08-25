@@ -269,8 +269,22 @@ Invoke-GrepCheck -Name 'RAW-HTML-SINK' -ReqIds 'SEC-021' -Severity 'WARN' -Exten
 
 # SEC-059 : dynamic code execution
 Invoke-GrepCheck -Name 'DYNAMIC-EVAL' -ReqIds 'SEC-059, SEC-017' -Severity 'FAIL' -Extensions @('.js','.jsx','.mjs','.cjs','.ts','.tsx','.vue','.svelte','.py','.php','.rb') `
-    -Pattern '\beval\s*\(|new\s+Function\s*\(|\bexec\s*\(\s*f[''\"]|\bos\.system\s*\(|shell=True|child_process.*exec\s*\(\s*(`|[''\"].*\+)' `
+    -Pattern '\beval\s*\(|new\s+Function\s*\(|\bexec\s*\(\s*f[''\"]|\bos\.system\s*\(|shell=True|child_process.*exec\s*\(\s*(`|[''\\"].*\+)' `
     -ExcludeRegex '\.min\.|[/\\]assets[/\\]javascripts'
+
+# SEC-021 (server-side complement to RAW-HTML-SINK): Python/Ruby servers composing
+# HTML from f-strings without an escape call - stored XSS invisible to JS-sink scans.
+# Gap demonstrated by differential pentest validation (agentic DAST caught what the
+# static JS-layer missed); agent validates exploitability at runtime per SEC-021.
+Invoke-GrepCheck -Name 'SERVER-HTML-SINK' -ReqIds 'SEC-021' -Severity 'WARN' -Extensions @('.py', '.rb') `
+    -Pattern '(?i)f[''\"]<(h[1-6]|p|div|span|html|body|li|ul|table|tr|td|th|a)\b' `
+    -SkipLineIfMatch '(?i)escape|esc\s*\(|sanitize|markupsafe'
+
+# SEC-024: file opens whose path joins a request-derived variable without a visible
+# containment check (allowlist/normpath/startswith) within 3 context lines.
+Invoke-GrepCheck -Name 'UNCONTAINED-FILE-OPEN' -ReqIds 'SEC-024' -Severity 'WARN' -Extensions @('.py') `
+    -Pattern 'open\s*\(\s*os\.path\.join\s*\([^)]*,\s*[A-Za-z_][A-Za-z0-9_]*\s*\)' `
+    -ContextRadius 3 -ContextSkipIfMatch '(?i)normpath|allowlist|startswith|allowed|whitelist'
 
 # SEC-019 : SQL built by concatenation
 Invoke-GrepCheck -Name 'SQL-CONCATENATION' -ReqIds 'SEC-019' -Severity 'FAIL' -Extensions @('.js','.jsx','.mjs','.cjs','.ts','.tsx','.py','.php','.rb','.cs','.go','.java') `

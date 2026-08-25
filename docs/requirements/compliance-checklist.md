@@ -47,7 +47,7 @@ screenshot/console reference.
 
 | ID | Requirement (short) | Status | Evidence / Notes |
 |---|---|---|---|
-| SEC-004 | Auth enforced server-side, not UI-only | ☐ | |
+| SEC-004 | Auth enforced server-side, not UI-only | ✅ | Darb 2026-08-25: unauth POST /en/api/admin/discovery → 401; unauth /en/api/validate-apply-link → 401; wrong admin password → 303 back to login (live curl, dev :3210). All admin verbs route through isAdminAuthorized() (lib/admin-auth.ts:18). |
 | SEC-026 | Password reset: single-use, TTL ≤15min, no enumeration | ☐ | |
 | SEC-064 | User-facing MFA (TOTP) offered; enforced for admins | ☐ | |
 | SEC-065 | Account enumeration blocked on login/signup/reset (generic responses + timing) | ☐ | |
@@ -89,7 +89,7 @@ screenshot/console reference.
 
 | ID | Requirement (short) | Status | Evidence / Notes |
 |---|---|---|---|
-| SEC-021 | XSS: escape/sanitize rendered user content + CSP | 🔶 | Tijarti 2026-08-25: JSON-LD sinks escaped via escHtml() (app/layout.tsx:70, app/businesses/[id]/page.tsx:52); audit RAW-HTML-SINK now PASS. CSP headers not yet shipped — open half |
+| SEC-021 | XSS: escape/sanitize rendered user content + CSP | 🔶 | Tijarti 2026-08-25: JSON-LD sinks escaped via escHtml(). Darb 2026-08-25: job-detail JSON-LD escapes `<>&U+2028/9` before dangerouslySetInnerHTML (app/[locale]/jobs/[id]/page.tsx:29); audit RAW-HTML-SINK = 2 WARN (this sink + playwright-report artifact, both justified). CSP still not shipped on either — open half. AlphaVerdict 2026-08-25: Jinja2 autoescape was silently OFF (select_autoescape keys on final `.j2` suffix) → fixed explicit autoescape=True (report/render.py); regression tests/test_torture_regressions.py::test_report_escapes_hostile_strings proves `<script>` payloads render escaped; audit-compliance on repo = PASSED, 0 FAIL. |
 | SEC-022 | CSRF protection on state-changing routes | ✅ | Tijarti: double-submit CSRF (middleware.ts:61-72); E2E request without header rejected err.csrf 2026-08-24 |
 | SEC-023 | File uploads: type+magic-byte+size checks, safe storage | ☐ | |
 | SEC-024 | Path traversal blocked (containment verified) | ☐ | |
@@ -285,13 +285,13 @@ screenshot/console reference.
 |---|---|---|---|
 | SEO-096 | Launched on custom domain (no platform-preview URL) | ☐ | |
 | SEO-097 | No boilerplate tab titles ("Vite + React" etc.) | ☐ | |
-| SEO-098 | Open Graph/Twitter tags + image on every shareable page | ☐ | |
+| SEO-098 | Open Graph/Twitter tags + image on every shareable page | ☐ | AlphaVerdict 2026-08-25: NO-OG-TAGS WARN acknowledged as a real gap (mkdocs.yml lacks `social:` plugin config); docs site is low-stakes, parked until next docs pass. |
 | SEO-099 | Exactly one `<h1>` per page; hierarchical headings; landmarks | ✅ | Tijarti 2026-08-25: audit H1-COUNT PASS |
 | SEO-100 | Canonical URLs on every indexable page | ☐ | |
 | SEO-101 | JSON-LD structured data, validated | ☐ | |
-| SEO-102 | sitemap.xml present, accurate, linked from robots.txt | ✅ | Tijarti 2026-08-25: app/sitemap.ts serves valid XML via virtual route (curl-verified); audit NO-SITEMAP WARN = static-file false positive, justified |
+| SEO-102 | sitemap.xml present, accurate, linked from robots.txt | ✅ | Tijarti 2026-08-25: app/sitemap.ts serves valid XML via virtual route (curl-verified); audit NO-SITEMAP WARN = static-file false positive, justified. AlphaVerdict 2026-08-25: site/sitemap.xml exists (mkdocs-material default); NO-SITEMAP WARN = detector gap — script scans root/public/static/dist/out but not mkdocs `site/` dir; candidate fix in Ruler. |
 | SEO-103 | `<html lang>` correct (+hreflang when multi-language) | ✅ | Tijarti: `<html lang={locale} dir={dir}>` (app/layout.tsx:59); hreflang deferred until ccTLDs exist |
-| SEO-104 | robots.txt allows intended crawlers; blocks only deliberately | ✅ | Tijarti 2026-08-25: app/robots.ts serves allow-all + blocks /api,/dashboard,/login,/register + sitemap link (curl-verified); audit ROBOTS-TXT WARN = static-file false positive, justified |
+| SEO-104 | robots.txt allows intended crawlers; blocks only deliberately | ✅ | Tijarti 2026-08-25: app/robots.ts serves allow-all + blocks /api,/dashboard,/login,/register + sitemap link (curl-verified); audit ROBOTS-TXT WARN = static-file false positive, justified. AlphaVerdict 2026-08-25: no robots.txt exists (real gap, mkdocs-material default); docs site is low-stakes — parked until next docs pass. |
 | SEO-105 | llms.txt removed unless deliberately maintained | ☐ | |
 | SEO-106 | View-source shows real content (SSR/prerender), curl-verified | ☐ | |
 | SEO-107 | Zero console errors in production build | ☐ | |
@@ -350,7 +350,7 @@ Mapping: 124←105 · 125←106 · 126←107 · 127←108+109 · 128←110 · 12
 | UIX-109 | Meta descriptions unique, 120–160 chars, every page | ☐ | |
 | UIX-110 | Footer links resolve; footer consistent site-wide | ☐ | |
 | UIX-111 | Custom branded 404 returning proper HTTP status | ☐ | |
-| UIX-112 | Copyright year dynamic | ☐ | |
+| UIX-112 | Copyright year dynamic | ☐ | AlphaVerdict 2026-08-25: all 40 HARDCODED-YEAR WARNs land in `site/` (generated mkdocs-material output) — vendored third-party libs (lunr locale files, Font Awesome SVGs, bundled JS copyright headers), zero in project-authored UI; justified as not-applicable to generated vendor bundles. |
 | UIX-113 | Images compressed/modern formats/lazy/sized | ☐ | |
 | UIX-114 | Success messages on every mutating action (aria-live) | ☐ | |
 | UIX-115 | Error messages actionable on every failure mode | ☐ | |

@@ -35,7 +35,8 @@ writing a single line.
 ## Usage
 
 ```powershell
-# audit a project against the requirements
+# audit a project against the requirements (auto-detects web vs library;
+# force with -ProjectType Web|Library)
 powershell -File scripts/audit-compliance.ps1 -Target <project-folder> [-Deep]
 
 # verify the library structure itself

@@ -30,10 +30,14 @@ live status. Nothing is "done" until that file says so with evidence.
 static/grep layer of the `[AUTO]` tags (secrets, injection patterns, storage
 misuse, crawler config, bundle/image budgets…). The remaining `[AUTO]`
 verifications are runtime/DNS/live-service probes, executed as agent-run or
-CI checks per each row's verification column. Run it after changes:
+CI checks per each row's verification column. Targets are classified by
+project type from root-level evidence: non-web repos (CLIs, libraries,
+backend services) skip absence-based marketing checks (sitemap/robots/OG/
+h1/title/lang/canonical) as not applicable — every security and code-quality
+check always runs. Run it after changes:
 
 ```powershell
-powershell -File scripts/audit-compliance.ps1 -Target <project-folder> [-Deep]
+powershell -File scripts/audit-compliance.ps1 -Target <project-folder> [-Deep] [-ProjectType Web|Library]
 ```
 
 Exit code `2` = FAIL findings exist; `0` = clean (review WARNs).

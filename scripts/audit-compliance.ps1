@@ -22,6 +22,15 @@
 .PARAMETER SkipGit
     Skips repository-level checks (.env tracking, .gitignore coverage).
 
+.PARAMETER ProjectType
+    Auto (default) classifies the target from root-level evidence: a website
+    when index.html / next|nuxt|astro|vite|svelte config exists at root, or
+    root package.json declares a web framework. Non-web targets (CLIs,
+    libraries, backend services) skip absence-based marketing checks
+    (sitemap/robots/OG/h1/title/lang/canonical/bundles) as not applicable -
+    all security and code-quality checks always run. Web/Library force the
+    classification explicitly.
+
 .EXAMPLE
     powershell -File scripts\audit-compliance.ps1 -Target C:\code\my-site -Deep
 #>
@@ -31,7 +40,11 @@ param(
     [string]$Target = (Get-Location).Path,
     [switch]$Deep,
     [switch]$SkipGit,
-    [switch]$IncludeToolDirs
+    [switch]$IncludeToolDirs,
+    # Repo-type scoping: 'Auto' classifies from root-level evidence;
+    # 'Web'/'Library' force the classification explicitly.
+    [ValidateSet('Auto', 'Web', 'Library')]
+    [string]$ProjectType = 'Auto'
 )
 
 $ErrorActionPreference = 'Continue'
@@ -90,6 +103,68 @@ if (-not (Test-Path -LiteralPath $Target -PathType Container)) {
     exit 1
 }
 $Target = (Resolve-Path -LiteralPath $Target).Path
+
+# ===========================================================================
+# REPO-TYPE SCOPING (functionality-first)
+# ---------------------------------------------------------------------------
+# Web-only checks (sitemaps, robots, OG tags, h1 counts, boilerplate titles,
+# canonical/schema presence) measure MARKETING-SITE qualities. Applying them
+# to a repo that does not SERVE a website produces pure noise - a CLI library
+# has no sitemap for the same reason it has no favicon.
+#
+# Classification evidence comes from ROOT-LEVEL signals only, never from
+# stray artifacts deeper in the tree (generated reports, docs builds, demo
+# fixtures must not flip a library into a "website"):
+#   WEB  requires root-level index.html OR a web-framework config
+#        (next.config / nuxt.config / vite/astro/svelte config) OR root
+#        package.json declaring a framework dependency.
+#   LIBRARY is everything else (CLI tools, backend services, pipelines).
+#
+# -ProjectType Web / Library overrides Auto for unusual layouts; Auto never
+# downgrades an explicit override. Findings suppressed by scoping are
+# reported as SKIP lines with the reason, keeping audits explainable.
+# ===========================================================================
+$webSignals = @()
+foreach ($c in @('index.html','index.htm','next.config.js','next.config.mjs','next.config.ts','nuxt.config.ts','nuxt.config.js','astro.config.mjs','astro.config.js','vite.config.ts','vite.config.js','svelte.config.js')) {
+    if (Test-Path -LiteralPath (Join-Path $Target $c)) { $webSignals += $c }
+}
+# Conventional SERVED-SOURCE roots count too (public/, static/): an
+# index.html there is deliberate site source. Build OUTPUTS (dist/, out/,
+# build/) intentionally do NOT count - generated artifacts must not flip
+# classification.
+if ($webSignals.Count -eq 0) {
+    foreach ($r in @('public', 'static')) {
+        foreach ($c in @('index.html', 'index.htm')) {
+            if (Test-Path -LiteralPath (Join-Path $Target (Join-Path $r $c))) { $webSignals += "$r/$c" }
+        }
+    }
+}
+if ($webSignals.Count -eq 0) {
+    $rootPkg = Join-Path $Target 'package.json'
+    if (Test-Path -LiteralPath $rootPkg) {
+        try {
+            $pkgJson = (Get-Content -LiteralPath $rootPkg -Raw | ConvertFrom-Json)
+            $allDeps = @(); foreach ($p in 'dependencies','devDependencies') { if ($pkgJson.$p) { $allDeps += @($pkgJson.$p.PSObject.Properties.Name) } }
+            if ($allDeps -match '(^|/)(next|nuxt|@angular/core|astro|svelte|@remix-run/react|vue)$' ) { $webSignals += 'package.json framework dep' }
+        } catch { }
+    }
+}
+$isWebProject = ($webSignals.Count -gt 0)
+if ($ProjectType -eq 'Web') { $isWebProject = $true }
+elseif ($ProjectType -eq 'Library') { $isWebProject = $false }
+
+$projectKindLabel = if ($isWebProject) { 'WEB (site/app serving pages)' } else { 'LIBRARY/CLI (does not serve pages)' }
+Write-Host (" Project type: {0}" -f $projectKindLabel) -ForegroundColor Cyan
+if (-not $isWebProject) {
+    Write-Host " Web-only marketing checks (sitemap/robots/OG/h1/title/lang/canonical/bundles) are skipped as not applicable." -ForegroundColor DarkGray
+}
+
+# Gate helper: run the scriptblock only for web projects; otherwise record SKIP.
+function Invoke-WebOnlyCheck {
+    param([string]$Name, [scriptblock]$Body)
+    if ($isWebProject) { & $Body }
+    else { $checkResults.Add(("SKIP  {0,-22} (not applicable: target is not a website)" -f $Name)) }
+}
 
 $script:Findings = New-Object System.Collections.Generic.List[object]
 $checkResults = New-Object System.Collections.Generic.List[string]
@@ -283,7 +358,8 @@ Invoke-GrepCheck -Name 'DYNAMIC-EVAL' -ReqIds 'SEC-059, SEC-017' -Severity 'FAIL
 # static JS-layer missed); agent validates exploitability at runtime per SEC-021.
 Invoke-GrepCheck -Name 'SERVER-HTML-SINK' -ReqIds 'SEC-021' -Severity 'WARN' -Extensions @('.py', '.rb') `
     -Pattern '(?i)f[''\"]<(h[1-6]|p|div|span|html|body|li|ul|table|tr|td|th|a)\b' `
-    -SkipLineIfMatch '(?i)escape|esc\s*\(|sanitize|markupsafe'
+    -SkipLineIfMatch '(?i)escape|esc\s*\(|sanitize|markupsafe' `
+    -ExcludeRegex '(^|[/\\])(tests?|__tests__|fixtures?|mocks?|spec)[/\\]|\.test\.|\.spec\.'
 
 # SEC-024: file opens whose path joins a request-derived variable without a visible
 # containment check (allowlist/normpath/startswith) within 3 context lines.
@@ -310,9 +386,9 @@ Invoke-GrepCheck -Name 'DEFAULT-CREDENTIALS' -ReqIds 'SEC-035' -Severity 'WARN' 
 
 # SEC-031 / SEC-054 : plaintext external URLs
 Invoke-GrepCheck -Name 'PLAINTEXT-HTTP-URL' -ReqIds 'SEC-054' -Severity 'WARN' -Extensions @('.js','.jsx','.mjs','.cjs','.ts','.tsx','.vue','.svelte','.html','.htm','.css','.scss','.json','.yaml','.yml','.py','.php','.rb') `
-    -Pattern 'http://(?!localhost[:/\)]|127\.0\.0\.1|0\.0\.0\.0|(www\.)?(w3\.org|schema|purl\.org|apache\.org|json-schema\.org|example\.(com|org)))' `
+    -Pattern 'http://(?!localhost[:/\)]|127\.0\.0\.1|0\.0\.0\.0|(www\.)?(w3\.org|schema|purl\.org|apache\.org|json-schema\.org|example\.(com|org)|idpf\.org))' `
     -SkipLineIfMatch '^\s*(//|\*|/\*)' `
-    -ExcludeRegex '^docs[/\\]requirements[/\\]|\.min\.|[/\\]assets[/\\]javascripts'
+    -ExcludeRegex '^docs[/\\]requirements[/\\]|\.min\.|[/\\]assets[/\\]javascripts|(^|[/\\])(tests?|__tests__|fixtures?|mocks?|spec)[/\\]|\.test\.|\.spec\.'
 
 # SEC-012 : leftover debugger statements
 Invoke-GrepCheck -Name 'DEBUGGER-STATEMENT' -ReqIds 'SEC-012' -Severity 'FAIL' -Extensions @('.js','.jsx','.mjs','.cjs','.ts','.tsx','.vue','.svelte') `
@@ -409,145 +485,171 @@ Write-Banner "SEO & production config scans"
 
 $htmlFiles = @($allFiles | Where-Object { @('.html', '.htm') -contains $_.Extension.ToLowerInvariant() })
 
-# SEO-097 : default boilerplate titles
-Invoke-GrepCheck -Name 'BOILERPLATE-TITLE' -ReqIds 'SEO-097' -Severity 'WARN' -Extensions @('.html', '.htm') `
-    -Pattern '(?i)<title>\s*(vite\s*\+\s*react|create next app|react app|my react app|next\.js app|webpack app)\s*</title>'
-
-# SEO-103 : <html lang=""> attribute present
-$langMissing = 0
-foreach ($hf in $htmlFiles) {
-    $content = Get-Content -LiteralPath $hf.FullName -Raw -ErrorAction SilentlyContinue
-    if ($null -eq $content) { continue }
-    if ($content -match '<html[\s>]' -and $content -notmatch '<html[^>]*\blang\s*=') {
-        Add-Finding -Check 'HTML-LANG-MISSING' -Severity 'WARN' -File (Resolve-Rel $hf.FullName) -Line 0 `
-            -Text '<html> tag has no lang attribute' -ReqIds 'SEO-103'
-        $langMissing++
-    }
+if (-not $isWebProject) {
+    Write-Host " Web project signals found at root: none - skipping absence-based SEO/marketing checks." -ForegroundColor DarkGray
 }
-if ($langMissing -gt 0) {
-    $checkResults.Add(("WARN  {0,-22} {1,4} file(s)      [SEO-103]" -f 'HTML-LANG-MISSING', $langMissing))
-} else {
-    $checkResults.Add("PASS  HTML-LANG-MISSING")
+
+# SEO-097 : default boilerplate titles
+Invoke-WebOnlyCheck -Name 'BOILERPLATE-TITLE' -Body {
+    Invoke-GrepCheck -Name 'BOILERPLATE-TITLE' -ReqIds 'SEO-097' -Severity 'WARN' -Extensions @('.html', '.htm') `
+        -Pattern '(?i)<title>\s*(vite\s*\+\s*react|create next app|react app|my react app|next\.js app|webpack app)\s*</title>'
+}
+
+# SEO-103 : <html lang="" attribute present
+Invoke-WebOnlyCheck -Name 'HTML-LANG-MISSING' -Body {
+    $langMissing = 0
+    foreach ($hf in $htmlFiles) {
+        $content = Get-Content -LiteralPath $hf.FullName -Raw -ErrorAction SilentlyContinue
+        if ($null -eq $content) { continue }
+        if ($content -match '<html[\s>]' -and $content -notmatch '<html[^>]*\blang\s*=') {
+            Add-Finding -Check 'HTML-LANG-MISSING' -Severity 'WARN' -File (Resolve-Rel $hf.FullName) -Line 0 `
+                -Text '<html> tag has no lang attribute' -ReqIds 'SEO-103'
+            $langMissing++
+        }
+    }
+    if ($langMissing -gt 0) {
+        $checkResults.Add(("WARN  {0,-22} {1,4} file(s)      [SEO-103]" -f 'HTML-LANG-MISSING', $langMissing))
+    } else {
+        $checkResults.Add("PASS  HTML-LANG-MISSING")
+    }
 }
 
 # SEO-099 : exactly one <h1> per page
-$h1Issues = 0
-foreach ($hf in $htmlFiles) {
-    $h1Matches = @(Select-String -LiteralPath $hf.FullName -Pattern '<h1[\s>]' -AllMatches -ErrorAction SilentlyContinue)
-    $count = 0
-    foreach ($hm in $h1Matches) { $count += $hm.Matches.Count }
-    if ($count -ne 1) {
-        $reason = if ($count -eq 0) { 'no <h1> found' } else { "$count <h1> elements" }
-        Add-Finding -Check 'H1-COUNT' -Severity 'WARN' -File (Resolve-Rel $hf.FullName) -Line 0 `
-            -Text "page should contain exactly one h1 ($reason)" -ReqIds 'SEO-099'
-        $h1Issues++
+Invoke-WebOnlyCheck -Name 'H1-COUNT' -Body {
+    $h1Issues = 0
+    foreach ($hf in $htmlFiles) {
+        $h1Matches = @(Select-String -LiteralPath $hf.FullName -Pattern '<h1[\s>]' -AllMatches -ErrorAction SilentlyContinue)
+        $count = 0
+        foreach ($hm in $h1Matches) { $count += $hm.Matches.Count }
+        if ($count -ne 1) {
+            $reason = if ($count -eq 0) { 'no <h1> found' } else { "$count <h1> elements" }
+            Add-Finding -Check 'H1-COUNT' -Severity 'WARN' -File (Resolve-Rel $hf.FullName) -Line 0 `
+                -Text "page should contain exactly one h1 ($reason)" -ReqIds 'SEO-099'
+            $h1Issues++
+        }
     }
-}
-if ($h1Issues -gt 0) {
-    $checkResults.Add(("WARN  {0,-22} {1,4} page(s)     [SEO-099]" -f 'H1-COUNT', $h1Issues))
-} else {
-    $checkResults.Add("PASS  H1-COUNT")
+    if ($h1Issues -gt 0) {
+        $checkResults.Add(("WARN  {0,-22} {1,4} page(s)     [SEO-099]" -f 'H1-COUNT', $h1Issues))
+    } else {
+        $checkResults.Add("PASS  H1-COUNT")
+    }
 }
 
 # SEO-098 / SEO-100 / SEO-101 : site-wide presence of OG tags, canonical, structured data
-if ($htmlFiles.Count -gt 0) {
-    $htmlPaths = @($htmlFiles | ForEach-Object { $_.FullName })
-    $ogHits    = @(Select-String -LiteralPath $htmlPaths -Pattern '(property|name)\s*=\s*["''](og:|twitter:)' -AllMatches -ErrorAction SilentlyContinue)
-    $canonHits = @(Select-String -LiteralPath $htmlPaths -Pattern 'rel\s*=\s*[''\"]canonical' -AllMatches -ErrorAction SilentlyContinue)
-    $ldHits    = @(Select-String -LiteralPath $htmlPaths -Pattern 'application/ld\+json' -AllMatches -ErrorAction SilentlyContinue)
+Invoke-WebOnlyCheck -Name 'NO-OG-TAGS' -Body {
+    if ($htmlFiles.Count -gt 0) {
+        $htmlPaths = @($htmlFiles | ForEach-Object { $_.FullName })
+        $ogHits    = @(Select-String -LiteralPath $htmlPaths -Pattern '(property|name)\s*=\s*["''](og:|twitter:)' -AllMatches -ErrorAction SilentlyContinue)
+        $canonHits = @(Select-String -LiteralPath $htmlPaths -Pattern 'rel\s*=\s*[''\"]canonical' -AllMatches -ErrorAction SilentlyContinue)
+        $ldHits    = @(Select-String -LiteralPath $htmlPaths -Pattern 'application/ld\+json' -AllMatches -ErrorAction SilentlyContinue)
 
-    if ($ogHits.Count -eq 0) {
-        Add-Finding -Check 'NO-OG-TAGS' -Severity 'WARN' -File '(site-wide)' -Line 0 `
-            -Text 'no Open Graph tags found in any static HTML - social link previews will be bare' -ReqIds 'SEO-098'
-        $checkResults.Add("WARN  NO-OG-TAGS             [SEO-098]")
-    } else {
-        $checkResults.Add(("PASS  NO-OG-TAGS             ({0} og: tag lines)" -f $ogHits.Count))
+        if ($ogHits.Count -eq 0) {
+            Add-Finding -Check 'NO-OG-TAGS' -Severity 'WARN' -File '(site-wide)' -Line 0 `
+                -Text 'no Open Graph tags found in any static HTML - social link previews will be bare' -ReqIds 'SEO-098'
+            $checkResults.Add("WARN  NO-OG-TAGS             [SEO-098]")
+        } else {
+            $checkResults.Add(("PASS  NO-OG-TAGS             ({0} og: tag lines)" -f $ogHits.Count))
+        }
+
+        if ($canonHits.Count -eq 0) {
+            Add-Finding -Check 'NO-CANONICAL' -Severity 'WARN' -File '(site-wide)' -Line 0 `
+                -Text 'no rel=canonical links found in any static HTML (framework-injected canonicals are verified by the agent instead)' -ReqIds 'SEO-100'
+            $checkResults.Add("WARN  NO-CANONICAL           [SEO-100]")
+        } else {
+            $checkResults.Add(("PASS  NO-CANONICAL           ({0} canonical links)" -f $canonHits.Count))
+        }
+
+        if ($ldHits.Count -eq 0) {
+            Add-Finding -Check 'NO-SCHEMA-MARKUP' -Severity 'INFO' -File '(site-wide)' -Line 0 `
+                -Text 'no JSON-LD structured data found in static HTML' -ReqIds 'SEO-101'
+            $checkResults.Add("INFO  NO-SCHEMA-MARKUP       [SEO-101]")
+        } else {
+            $checkResults.Add(("PASS  NO-SCHEMA-MARKUP       ({0} ld+json blocks)" -f $ldHits.Count))
+        }
     }
-
-    if ($canonHits.Count -eq 0) {
-        Add-Finding -Check 'NO-CANONICAL' -Severity 'WARN' -File '(site-wide)' -Line 0 `
-            -Text 'no rel=canonical links found in any static HTML (framework-injected canonicals are verified by the agent instead)' -ReqIds 'SEO-100'
-        $checkResults.Add("WARN  NO-CANONICAL           [SEO-100]")
-    } else {
-        $checkResults.Add(("PASS  NO-CANONICAL           ({0} canonical links)" -f $canonHits.Count))
-    }
-
-    if ($ldHits.Count -eq 0) {
-        Add-Finding -Check 'NO-SCHEMA-MARKUP' -Severity 'INFO' -File '(site-wide)' -Line 0 `
-            -Text 'no JSON-LD structured data found in static HTML' -ReqIds 'SEO-101'
-        $checkResults.Add("INFO  NO-SCHEMA-MARKUP       [SEO-101]")
-    } else {
-        $checkResults.Add(("PASS  NO-SCHEMA-MARKUP       ({0} ld+json blocks)" -f $ldHits.Count))
+}
+if (-not $isWebProject) {
+    foreach ($n in @('NO-CANONICAL', 'NO-SCHEMA-MARKUP')) {
+        $checkResults.Add(("SKIP  {0,-22} (not applicable: target is not a website)" -f $n))
     }
 }
 
 # SEO-102 / SEO-104 / SEO-105 : sitemap.xml, robots.txt, llms.txt presence/content
-$servedRoots = @($Target, (Join-Path $Target 'public'), (Join-Path $Target 'static'), (Join-Path $Target 'dist'), (Join-Path $Target 'out')) |
-    Where-Object { Test-Path -LiteralPath $_ -PathType Container }
+Invoke-WebOnlyCheck -Name 'NO-SITEMAP' -Body {
+    $servedRoots = @($Target, (Join-Path $Target 'public'), (Join-Path $Target 'static'), (Join-Path $Target 'dist'), (Join-Path $Target 'out')) |
+        Where-Object { Test-Path -LiteralPath $_ -PathType Container }
 
-$sitemap = $null
-foreach ($root in $servedRoots) {
-    $candidate = Join-Path $root 'sitemap.xml'
-    if (Test-Path -LiteralPath $candidate) { $sitemap = $candidate; break }
-}
-if ($null -eq $sitemap) {
-    Add-Finding -Check 'NO-SITEMAP' -Severity 'WARN' -File '(site-wide)' -Line 0 `
-        -Text 'no sitemap.xml found in root/public/static/dist/out' -ReqIds 'SEO-102'
-    $checkResults.Add("WARN  NO-SITEMAP             [SEO-102]")
-} else {
-    $checkResults.Add(("PASS  NO-SITEMAP             ({0})" -f (Resolve-Rel $sitemap)))
-}
-
-$robots = $null
-foreach ($root in $servedRoots) {
-    $candidate = Join-Path $root 'robots.txt'
-    if (Test-Path -LiteralPath $candidate) { $robots = $candidate; break }
-}
-if ($null -eq $robots) {
-    Add-Finding -Check 'ROBOTS-TXT' -Severity 'WARN' -File '(site-wide)' -Line 0 `
-        -Text 'no robots.txt found - create one that allows the crawlers you want' -ReqIds 'SEO-104'
-    $checkResults.Add("WARN  ROBOTS-TXT             (missing)")
-} else {
-    $robotsContent = (Get-Content -LiteralPath $robots -Raw -ErrorAction SilentlyContinue)
-    if ($robotsContent -match '(?im)^\s*user-agent:\s*\*\s*$[\s\S]{0,120}?^\s*disallow:\s*/\s*$') {
-        Add-Finding -Check 'ROBOTS-TXT' -Severity 'WARN' -File (Resolve-Rel $robots) -Line 0 `
-            -Text 'robots.txt disallows ALL crawlers site-wide - intentional only for staging; fix before launch' -ReqIds 'SEO-104'
-        $checkResults.Add("WARN  ROBOTS-TXT             (blocks all crawlers)")
+    $sitemap = $null
+    foreach ($root in $servedRoots) {
+        $candidate = Join-Path $root 'sitemap.xml'
+        if (Test-Path -LiteralPath $candidate) { $sitemap = $candidate; break }
+    }
+    if ($null -eq $sitemap) {
+        Add-Finding -Check 'NO-SITEMAP' -Severity 'WARN' -File '(site-wide)' -Line 0 `
+            -Text 'no sitemap.xml found in root/public/static/dist/out' -ReqIds 'SEO-102'
+        $checkResults.Add("WARN  NO-SITEMAP             [SEO-102]")
     } else {
-        $checkResults.Add(("PASS  ROBOTS-TXT             ({0})" -f (Resolve-Rel $robots)))
+        $checkResults.Add(("PASS  NO-SITEMAP             ({0})" -f (Resolve-Rel $sitemap)))
+    }
+
+    $robots = $null
+    foreach ($root in $servedRoots) {
+        $candidate = Join-Path $root 'robots.txt'
+        if (Test-Path -LiteralPath $candidate) { $robots = $candidate; break }
+    }
+    if ($null -eq $robots) {
+        Add-Finding -Check 'ROBOTS-TXT' -Severity 'WARN' -File '(site-wide)' -Line 0 `
+            -Text 'no robots.txt found - create one that allows the crawlers you want' -ReqIds 'SEO-104'
+        $checkResults.Add("WARN  ROBOTS-TXT             (missing)")
+    } else {
+        $robotsContent = (Get-Content -LiteralPath $robots -Raw -ErrorAction SilentlyContinue)
+        if ($robotsContent -match '(?im)^\s*user-agent:\s*\*\s*$[\s\S]{0,120}?^\s*disallow:\s*/\s*$') {
+            Add-Finding -Check 'ROBOTS-TXT' -Severity 'WARN' -File (Resolve-Rel $robots) -Line 0 `
+                -Text 'robots.txt disallows ALL crawlers site-wide - intentional only for staging; fix before launch' -ReqIds 'SEO-104'
+            $checkResults.Add("WARN  ROBOTS-TXT             (blocks all crawlers)")
+        } else {
+            $checkResults.Add(("PASS  ROBOTS-TXT             ({0})" -f (Resolve-Rel $robots)))
+        }
+    }
+
+    $llmsTxt = $null
+    foreach ($root in $servedRoots) {
+        $candidate = Join-Path $root 'llms.txt'
+        if (Test-Path -LiteralPath $candidate) { $llmsTxt = $candidate; break }
+    }
+    if ($null -ne $llmsTxt) {
+        Add-Finding -Check 'LLMS-TXT-PRESENT' -Severity 'INFO' -File (Resolve-Rel $llmsTxt) -Line 0 `
+            -Text 'llms.txt exists - keep only if deliberately maintained for AI crawlers, otherwise remove' -ReqIds 'SEO-105'
+        $checkResults.Add("INFO  LLMS-TXT-PRESENT       [SEO-105]")
+    } else {
+        $checkResults.Add("PASS  LLMS-TXT-PRESENT       (none)")
     }
 }
-
-$llmsTxt = $null
-foreach ($root in $servedRoots) {
-    $candidate = Join-Path $root 'llms.txt'
-    if (Test-Path -LiteralPath $candidate) { $llmsTxt = $candidate; break }
-}
-if ($null -ne $llmsTxt) {
-    Add-Finding -Check 'LLMS-TXT-PRESENT' -Severity 'INFO' -File (Resolve-Rel $llmsTxt) -Line 0 `
-        -Text 'llms.txt exists - keep only if deliberately maintained for AI crawlers, otherwise remove' -ReqIds 'SEO-105'
-    $checkResults.Add("INFO  LLMS-TXT-PRESENT       [SEO-105]")
-} else {
-    $checkResults.Add("PASS  LLMS-TXT-PRESENT       (none)")
+if (-not $isWebProject) {
+    foreach ($n in @('ROBOTS-TXT', 'LLMS-TXT-PRESENT')) {
+        $checkResults.Add(("SKIP  {0,-22} (not applicable: target is not a website)" -f $n))
+    }
 }
 
 # SEO-109 : oversized JS/CSS bundles in served directories
-$bundleExts = @('.js', '.mjs', '.css')
-$bundles = @(Get-ChildItem -LiteralPath $Target -Recurse -File -Force -ErrorAction SilentlyContinue |
-    Where-Object {
-        ($bundleExts -contains $_.Extension.ToLowerInvariant()) -and
-        ($_.FullName -notmatch $skipDirRegex) -and
-        ($_.FullName -match '(\\|/)(public|static|dist|build|out)(\\|/)') -and
-        ($_.Length -gt 500KB)
-    })
-if ($bundles.Count -gt 0) {
-    foreach ($b in ($bundles | Sort-Object Length -Descending)) {
-        Add-Finding -Check 'BUNDLE-SIZE' -Severity 'WARN' -File (Resolve-Rel $b.FullName) -Line 0 `
-            -Text ("asset is {0:N1} KB - audit code-splitting/tree-shaking/compression" -f ($b.Length / 1KB)) -ReqIds 'SEO-109'
+Invoke-WebOnlyCheck -Name 'BUNDLE-SIZE' -Body {
+    $bundleExts = @('.js', '.mjs', '.css')
+    $bundles = @(Get-ChildItem -LiteralPath $Target -Recurse -File -Force -ErrorAction SilentlyContinue |
+        Where-Object {
+            ($bundleExts -contains $_.Extension.ToLowerInvariant()) -and
+            ($_.FullName -notmatch $skipDirRegex) -and
+            ($_.FullName -match '(\\|/)(public|static|dist|build|out)(\\|/)') -and
+            ($_.Length -gt 500KB)
+        })
+    if ($bundles.Count -gt 0) {
+        foreach ($b in ($bundles | Sort-Object Length -Descending)) {
+            Add-Finding -Check 'BUNDLE-SIZE' -Severity 'WARN' -File (Resolve-Rel $b.FullName) -Line 0 `
+                -Text ("asset is {0:N1} KB - audit code-splitting/tree-shaking/compression" -f ($b.Length / 1KB)) -ReqIds 'SEO-109'
+        }
+        $checkResults.Add(("WARN  {0,-22} {1,4} asset(s)    [SEO-109]" -f 'BUNDLE-SIZE', $bundles.Count))
+    } else {
+        $checkResults.Add("PASS  BUNDLE-SIZE            (no served asset > 500 KB)")
     }
-    $checkResults.Add(("WARN  {0,-22} {1,4} asset(s)    [SEO-109]" -f 'BUNDLE-SIZE', $bundles.Count))
-} else {
-    $checkResults.Add("PASS  BUNDLE-SIZE            (no served asset > 500 KB)")
 }
 
 # SEC-075 : unpinned GitHub Actions (mutable tags allow supply-chain injection)

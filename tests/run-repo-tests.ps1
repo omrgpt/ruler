@@ -353,6 +353,32 @@ jobs:
     $r6 = Invoke-RulerPs $auditScript @('-Target', $clean, '-Deep')
     Record 'C--Deep with no package.json is safe' (($r6.ExitCode -eq 0) -and ($r6.Output -match 'NPM-AUDIT'))
 
+    # v4.2 repo-type scoping: non-web targets skip absence-based marketing
+    # checks (functionality-first scoping) while every security check still
+    # runs; an explicit -ProjectType override always wins over Auto; web
+    # targets keep all checks. Generated artifacts deep in the tree (e.g.
+    # docs/report.html) must NOT flip classification to WEB.
+    $libproj = Join-Path $sandbox 'library-project'
+    New-Item -ItemType Directory -Path (Join-Path $libproj 'docs') -Force | Out-Null
+    Set-Content -LiteralPath (Join-Path $libproj 'pyproject.toml') -Encoding UTF8 -Value @'
+[project]
+name = "demo-cli"
+description = "a CLI tool that serves no pages"
+'@
+    Set-Content -LiteralPath (Join-Path $libproj 'docs\report.html') -Encoding UTF8 -Value '<html><body><h1>generated report</h1></body></html>'
+
+    $rl = Invoke-RulerPs $auditScript @('-Target', $libproj)
+    Record 'C-library auto-classifies as LIBRARY'   ($rl.Output -match [regex]::Escape('Project type: LIBRARY'))
+    Record 'C-generated html does not classify WEB' ($rl.Output -notmatch [regex]::Escape('Project type: WEB'))
+    Record 'C-library skips sitemap as n/a'         ($rl.Output -match '(?m)^\s*SKIP\s+NO-SITEMAP\s+\(not applicable')
+    Record 'C-library still runs security scans'    ($rl.Output -match '(?m)^\s*PASS\s+SECRET-TOKENS')
+    Record 'C-library audit exits 0'                ($rl.ExitCode -eq 0) "exit=$($rl.ExitCode)"
+
+    $rlw = Invoke-RulerPs $auditScript @('-Target', $libproj, '-ProjectType', 'Web')
+    Record 'C-forced Web re-enables marketing checks' ($rlw.Output -match '(?m)^\s*WARN\s+NO-SITEMAP') "exit=$($rlw.ExitCode)"
+
+    Record 'C-web project keeps all checks on'      ($r3.Output -notmatch 'not applicable')
+
     # =========================================================================
     Write-Host "`n--- SUITE D: cross-file consistency ---" -ForegroundColor Cyan
     # =========================================================================

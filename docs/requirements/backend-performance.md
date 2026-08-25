@@ -2,7 +2,7 @@
 
 **Scope:** All server code, database queries, background jobs, and data
 lifecycle logic across projects in this workspace.
-**Items:** PERF-069 … PERF-076 (8 requirements).
+**Items:** PERF-069 … PERF-080 (12 requirements).
 **Legend:** `[AUTO]` script-checked · `[AGENT]` agent-verified w/ evidence ·
 `[MANUAL]` human/monitoring action.
 
@@ -57,3 +57,4 @@ Added in the v4 expansion (2026-08-24 research pass).
 | 2026-08-24 | Initial import: 6 performance items with stable IDs and verification methods. |
 | 2026-08-24 | v2: Added PERF-075 (cascading deletions) and PERF-076 (third-party data purge) from the 142-point master list; grouped into sections. |
 | 2026-08-24 | v4: Added PERF-077 (migration discipline), PERF-078 (DB-enforced integrity constraints), PERF-079 (job reliability + dead-man's-switch heartbeats), PERF-080 (exact money types). Total now 12. |
+| 2026-08-25 | Header count corrected to PERF-069…080 (12 requirements) — stale pre-v4 header left behind by the v4 expansion; no requirement text changed. |

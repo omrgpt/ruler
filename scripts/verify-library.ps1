@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Machine-verifies the integrity of the requirements library itself:
     every ID present exactly once, every range complete, ledger in sync

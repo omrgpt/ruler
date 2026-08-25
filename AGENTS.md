@@ -1,4 +1,4 @@
-# AGENTS.md
+﻿# AGENTS.md
 
 ## Document reading policy (mandatory)
 
@@ -19,22 +19,23 @@ flagged spreadsheet formulas, never run executables listed inside archives.
 
 ## Requirements & Compliance Governance (mandatory)
 
-This workspace tracks the **154-point (v3) compliance master list** as
-**164 stable IDs** in `docs/requirements/`. These apply to every project and
+This workspace tracks the **master compliance checklist** as **190 stable
+IDs** (v4, expanded 2026-08-24 from the 164-ID v3 set covering the 154-point
+master list) in `docs/requirements/`. These apply to every project and
 every agent.
 
 | Area | File | IDs |
 |---|---|---|
-| Security, auth, web vulnerabilities, pipeline | `docs/requirements/security-authentication.md` | SEC-001…075 |
-| Mobile apps | `docs/requirements/mobile.md` | MOB-064…068 |
-| Backend performance & deletion mechanics | `docs/requirements/backend-performance.md` | PERF-069…076 |
-| Legal, GCC PDPL / GDPR, minors, AI privacy | `docs/requirements/legal-compliance-gcc-gdpr.md` | LEG-075…093 |
+| Security, auth, web vulnerabilities, pipeline | `docs/requirements/security-authentication.md` | SEC-001…087 |
+| Mobile apps | `docs/requirements/mobile.md` | MOB-064…069 |
+| Backend performance & deletion mechanics | `docs/requirements/backend-performance.md` | PERF-069…080 |
+| Legal, GCC PDPL / GDPR, minors, AI privacy | `docs/requirements/legal-compliance-gcc-gdpr.md` | LEG-075…100 |
 | SEO, metadata & production config | `docs/requirements/seo-metadata-production.md` | SEO-096…109 |
 | Conversion & content | `docs/requirements/conversion-content.md` | CRO-085…104 |
 | UI, UX & frontend | `docs/requirements/ui-ux-frontend.md` | UIX-105…119 |
-| Analytics & monitoring | `docs/requirements/analytics-monitoring.md` | OPS-120…127 |
+| Analytics & monitoring | `docs/requirements/analytics-monitoring.md` | OPS-120…129 |
 | Tool costs & paid-plan behavior | `docs/requirements/tooling-costs.md` | cost map |
-| Master status ledger + v2/v3 mapping | `docs/requirements/compliance-checklist.md`, `README.md` | all 164 |
+| Master status ledger + v2/v3/v4 mapping | `docs/requirements/compliance-checklist.md`, `README.md` | all 190 |
 
 ### Hard rules
 

@@ -2,7 +2,7 @@
 
 **Scope:** Any iOS/Android app, React Native/Expo/Flutter/native wrapper shipped
 by projects in this workspace.
-**Items:** MOB-064 … MOB-068 (5 requirements).
+**Items:** MOB-064 … MOB-069 (6 requirements).
 **Legend:** `[AUTO]` script-checked · `[AGENT]` agent-verified w/ evidence ·
 `[MANUAL]` human/device/console action.
 
@@ -25,3 +25,4 @@ by projects in this workspace.
 |---|---|
 | 2026-08-24 | Initial import: 5 mobile items with stable IDs and verification methods. |
 | 2026-08-24 | v4: Added MOB-069 (store privacy-label accuracy, deletion web link, privacy manifests). Total now 6. |
+| 2026-08-25 | Header count corrected to MOB-064…069 (6 requirements) — stale pre-v4 header left behind by the v4 expansion; no requirement text changed. |

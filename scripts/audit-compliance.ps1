@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Automated compliance auditor implementing the [AUTO] verification methods
     defined in docs/requirements/*.md.
@@ -281,8 +281,13 @@ Invoke-GrepCheck -Name 'LOG-MAY-LEAK-SECRET' -ReqIds 'SEC-013' -Severity 'WARN' 
     -Pattern '(?i)(console\.(log|info|warn|error|debug)|logger?\.(info|warn|error|debug)|print)\s*\([^)\r\n]{0,160}\b(password|passwd|secret|api[_-]?key|token|credential|authorization)\b'
 
 # SEC-035 : default credentials in code
+# v4.1: name group widened beyond bare admin/root/superuser/test after the
+# adversarial self-test measured 3/6 detection on realistic cases -
+# ADMIN_PASSWORD / *_PASS suffixes and generic password/pass/pwd names were
+# invisible to the old pattern while holding canonical weak values.
 Invoke-GrepCheck -Name 'DEFAULT-CREDENTIALS' -ReqIds 'SEC-035' -Severity 'WARN' `
-    -Pattern '(?i)[''\"]?(admin|root|superuser|test)[''\"]?\s*[:=]\s*[''\"](admin|root|123456|12345678|password|passw0rd|letmein|qwerty|admin123|changeme)[''\"]'
+    -Pattern '(?i)[''\"]?\b([\w-]*(password|passwd|pass|pwd)|(admin|root|superuser|test))[''\"]?\s*[:=]\s*[''\"](admin|root|123456|12345678|123456789|1234567890|password|passw0rd|letmein|qwerty|admin123|changeme|welcome|abc123|iloveyou|monkey|dragon|111111)[''\"]' `
+    -ExcludeRegex '^docs[/\\]requirements[/\\]|testdata|fixtures?[/\\]|[/\\]((i18n)|(locales?)|(lang)|(translations))[/\\]'
 
 # SEC-031 / SEC-054 : plaintext external URLs
 Invoke-GrepCheck -Name 'PLAINTEXT-HTTP-URL' -ReqIds 'SEC-054' -Severity 'WARN' -Extensions @('.js','.jsx','.mjs','.cjs','.ts','.tsx','.vue','.svelte','.html','.htm','.css','.scss','.json','.yaml','.yml','.py','.php','.rb') `
@@ -548,6 +553,80 @@ if ($workflowFiles.Count -gt 0) {
     }
 } else {
     $checkResults.Add("INFO  UNPINNED-ACTION       (no workflows found)")
+}
+
+# ===========================================================================
+# v4.1 ADDITIONS : static layer for previously unimplemented [AUTO] families
+# (UIX-112, UIX-113, CRO-097, CRO-085). Runtime/live-service AUTO verifications
+# (DNS TXT probes, WHOIS expiry, deployed-URL header crawls, DB/RLS scans)
+# remain agent-run or CI work per each row's verification column.
+# ===========================================================================
+Write-Banner "Frontend quality static scans (v4.1)"
+
+# UIX-112 : hardcoded copyright year literals
+Invoke-GrepCheck -Name 'HARDCODED-YEAR' -ReqIds 'UIX-112' -Severity 'WARN' -Extensions @('.js','.jsx','.mjs','.cjs','.ts','.tsx','.vue','.svelte','.html','.htm') `
+    -Pattern '(©|&copy;|(?i)copyright).{0,40}\b20(1[0-9]|2[0-5])\b' `
+    -ExcludeRegex '(^|[/\\])(tests?|__tests__|fixtures?|mocks?|spec|node_modules)[/\\]|\.test\.|\.spec\.'
+
+# UIX-113 : oversized raster images inside repo asset directories
+# (build-output copies are covered by BUNDLE-SIZE; this targets source assets)
+$imageExts = @('.png', '.jpg', '.jpeg', '.gif')
+$bigImages = @(Get-ChildItem -LiteralPath $Target -Recurse -File -Force -ErrorAction SilentlyContinue |
+    Where-Object {
+        ($imageExts -contains $_.Extension.ToLowerInvariant()) -and
+        ($_.FullName -notmatch $skipDirRegex) -and
+        ($_.FullName -match '(\\|/)(public|static|assets|images|img|media)(\\|/)') -and
+        ($_.Length -gt 200KB)
+    })
+if ($bigImages.Count -gt 0) {
+    foreach ($img in ($bigImages | Sort-Object Length -Descending)) {
+        Add-Finding -Check 'OVERSIZED-IMAGE' -Severity 'WARN' -File (Resolve-Rel $img.FullName) -Line 0 `
+            -Text ("image is {0:N0} KB - compress / convert to WebP-AVIF / resize (budget 200 KB)" -f ($img.Length / 1KB)) -ReqIds 'UIX-113'
+    }
+    $checkResults.Add(("WARN  {0,-22} {1,4} asset(s)    [UIX-113]" -f 'OVERSIZED-IMAGE', $bigImages.Count))
+} else {
+    $checkResults.Add("PASS  OVERSIZED-IMAGE          (no repo image > 200 KB)")
+}
+
+# CRO-097 : prefers-reduced-motion support missing while animations exist.
+# Project-level signal: any animation construct with zero reduced-motion
+# guards anywhere is reported once per site containing animation constructs.
+$motionFiles = @($allFiles | Where-Object { @('.css','.scss','.sass','.less','.js','.jsx','.mjs','.cjs','.ts','.tsx','.vue','.svelte','.html','.htm') -contains $_.Extension.ToLowerInvariant() })
+if ($motionFiles.Count -gt 0) {
+    $motionPaths = @($motionFiles | ForEach-Object { $_.FullName })
+    $animHits = @(Select-String -LiteralPath $motionPaths -Pattern '@keyframes\s+[\w-]+|transition\s*:|animation\s*:|animate-(spin|pulse|bounce)' -AllMatches -ErrorAction SilentlyContinue)
+    $rmHits   = @(Select-String -LiteralPath $motionPaths -Pattern 'prefers-reduced-motion' -AllMatches -ErrorAction SilentlyContinue)
+    if ($animHits.Count -gt 0 -and $rmHits.Count -eq 0) {
+        foreach ($a in ($animHits | Select-Object -First 10)) {
+            $rel = Resolve-Rel $a.Path
+            Add-Finding -Check 'REDUCED-MOTION-MISSING' -Severity 'WARN' -File $rel -Line $a.LineNumber `
+                -Text ("animation/transition construct present but no prefers-reduced-motion guard anywhere ({0} construct site(s))" -f $animHits.Count) -ReqIds 'CRO-097'
+        }
+        $checkResults.Add(("WARN  {0,-22} {1,4} file(s)      [CRO-097]" -f 'REDUCED-MOTION-MISSING', @($animHits | Select-Object -First 10).Count))
+    } elseif ($animHits.Count -eq 0) {
+        $checkResults.Add("PASS  REDUCED-MOTION-MISSING  (no animation constructs found)")
+    } else {
+        $checkResults.Add(("PASS  REDUCED-MOTION-MISSING  ({0} reduced-motion guard line(s))" -f $rmHits.Count))
+    }
+}
+
+# CRO-085 : multiple modal-root components suggest stacked-popup risk.
+# Static signal only - per-session popup frequency stays an agent walkthrough.
+$modalFiles = @($allFiles | Where-Object { @('.html','.htm','.jsx','.tsx','.js','.ts','.vue','.svelte','.php') -contains $_.Extension.ToLowerInvariant() })
+if ($modalFiles.Count -gt 0) {
+    $modalRootHits = @(Select-String -LiteralPath @($modalFiles | ForEach-Object { $_.FullName }) `
+        -Pattern '<\s*(Modal|Dialog|Drawer|Sheet)[\s/>]' -AllMatches -ErrorAction SilentlyContinue)
+    if ($modalRootHits.Count -gt 1) {
+        foreach ($mh in ($modalRootHits | Select-Object -First 15)) {
+            $rel = Resolve-Rel $mh.Path
+            $lt = $mh.Line; if ($lt.Length -gt 160) { $lt = $lt.Substring(0, 160) + " [...]" }
+            Add-Finding -Check 'MULTI-MODAL-ROOTS' -Severity 'INFO' -File $rel -Line $mh.LineNumber `
+                -Text $lt -ReqIds 'CRO-085'
+        }
+        $checkResults.Add(("INFO  {0,-22} {1,4} root(s)     [CRO-085] review for stacked popups / shared overlay manager" -f 'MULTI-MODAL-ROOTS', $modalRootHits.Count))
+    } else {
+        $checkResults.Add("PASS  MULTI-MODAL-ROOTS       (<=1 modal root component)")
+    }
 }
 
 # ===========================================================================

@@ -1,13 +1,15 @@
-# Master Compliance Checklist — 154-Point Master List (v3)
+# Master Compliance Checklist
 
 **The ledger.** Every requirement's live status and evidence lives here.
 An item is `done` ONLY when this row says ✅ **and** evidence is recorded.
 
-The v3 master list contains **154 checkpoints**. This library tracks them as
-**164 stable IDs**: v3's reorganization moved items between sections (IDs are
-permanent — they didn't move), three v3 lines were duplicates and were
-deduped (#142 = #27, #153 = #25, #154 = #26), and 12 genuinely new items
-became SEC-064…075. See the mapping in [README](./README.md).
+The v3 master list contained 154 checkpoints; this library now tracks
+**190 stable IDs (v4)** — v3's reorganization moved items between sections
+(IDs are permanent — they didn't move), three v3 lines were duplicates and
+were deduped (#142 = #27, #153 = #25, #154 = #26), 12 genuinely new items
+became SEC-064…075, and the 2026-08-24 v4 research pass added SEC-076…087,
+PERF-077…080, LEG-094…100, OPS-128…129, MOB-069. See the mapping in
+[README](./README.md).
 
 ## Status legend
 
@@ -31,12 +33,12 @@ screenshot/console reference.
 
 | ID | Requirement (short) | Status | Evidence / Notes |
 |---|---|---|---|
-| SEC-001 | No DB credentials in code/bundles/logs | ☐ | |
-| SEC-002 | .env gitignored, never tracked | ☐ | |
-| SEC-003 | API keys server-side env only; short-lived where possible | ☐ | |
+| SEC-001 | No DB credentials in code/bundles/logs | ✅ | Tijarti 2026-08-25: audit PASS (GIT-TRACKED-SECRETS, SECRET-TOKENS, SECRET-ASSIGNMENT) |
+| SEC-002 | .env gitignored, never tracked | ✅ | Tijarti 2026-08-25: audit PASS GITIGNORE-ENV |
+| SEC-003 | API keys server-side env only; short-lived where possible | ✅ | Tijarti 2026-08-25: audit PASS PRIVILEGED-KEY-IN-CLIENT; Stripe secret read server-side only (app/api/webhooks/stripe/route.ts) |
 | SEC-015 | Git history secret-free (rotate+purge on leak) | ☐ | |
 | SEC-016 | No secrets in front-end bundles | ☐ | |
-| SEC-030 | JWT secrets long/random/rotated/env-sourced | ☐ | |
+| SEC-030 | JWT secrets long/random/rotated/env-sourced | 🔶 | Tijarti 2026-08-25: AUTH_SECRET now fail-closed ≥32 chars in production (lib/security/session.ts:6-21); rotation procedure still to be defined |
 | SEC-035 | Default credentials removed everywhere | ☐ | |
 | SEC-062 | Spend caps + billing alerts all paid services | ☐ | |
 | SEC-063 | 2FA on all infrastructure accounts | ☐ | |
@@ -50,8 +52,8 @@ screenshot/console reference.
 | SEC-064 | User-facing MFA (TOTP) offered; enforced for admins | ☐ | |
 | SEC-065 | Account enumeration blocked on login/signup/reset (generic responses + timing) | ☐ | |
 | SEC-027 | Sessions expire, rotate, server-side destroy on logout | ☐ | |
-| SEC-028 | Tokens in Secure/HttpOnly/SameSite cookies (not localStorage) | ☐ | |
-| SEC-029 | bcrypt ≥12 / argon2id password hashing | ☐ | |
+| SEC-028 | Tokens in Secure/HttpOnly/SameSite cookies (not localStorage) | ✅ | Tijarti: session cookie httpOnly + Secure(prod) + SameSite=lax (lib/security/session.ts:35-43) |
+| SEC-029 | bcrypt ≥12 / argon2id password hashing | ✅ | Tijarti: bcrypt cost 12 (app/api/auth/register/route.ts:33, app/api/listings/route.ts:121) |
 | SEC-061 | OAuth state validated, strict redirects, server-side exchange | ☐ | |
 
 ### Authorization & Access Control
@@ -77,7 +79,7 @@ screenshot/console reference.
 | ID | Requirement (short) | Status | Evidence / Notes |
 |---|---|---|---|
 | SEC-017 | Never trust client-side security decisions | ☐ | |
-| SEC-018 | Schema-based validation: types, lengths, reject unexpected fields | ☐ | |
+| SEC-018 | Schema-based validation: types, lengths, reject unexpected fields | ✅ | Tijarti: zod schema for every API input (lib/validation.ts); E2E 422 rejection verified 2026-08-24/25 |
 | SEC-019 | Parameterized queries exclusively (SQL injection) | ☐ | |
 | SEC-020 | NoSQL injection blocked (operator/`$where`) | ☐ | |
 | SEC-039 | Every API route validates inputs independently | ☐ | |
@@ -87,8 +89,8 @@ screenshot/console reference.
 
 | ID | Requirement (short) | Status | Evidence / Notes |
 |---|---|---|---|
-| SEC-021 | XSS: escape/sanitize rendered user content + CSP | ☐ | |
-| SEC-022 | CSRF protection on state-changing routes | ☐ | |
+| SEC-021 | XSS: escape/sanitize rendered user content + CSP | 🔶 | Tijarti 2026-08-25: JSON-LD sinks escaped via escHtml() (app/layout.tsx:70, app/businesses/[id]/page.tsx:52); audit RAW-HTML-SINK now PASS. CSP headers not yet shipped — open half |
+| SEC-022 | CSRF protection on state-changing routes | ✅ | Tijarti: double-submit CSRF (middleware.ts:61-72); E2E request without header rejected err.csrf 2026-08-24 |
 | SEC-023 | File uploads: type+magic-byte+size checks, safe storage | ☐ | |
 | SEC-024 | Path traversal blocked (containment verified) | ☐ | |
 | SEC-025 | SSRF blocked (allowlist, private-range denial) | ☐ | |
@@ -100,14 +102,14 @@ screenshot/console reference.
 
 | ID | Requirement (short) | Status | Evidence / Notes |
 |---|---|---|---|
-| SEC-036 | Webhook signatures strictly verified, idempotent processing | ☐ | |
+| SEC-036 | Webhook signatures strictly verified, idempotent processing | 🔶 | Tijarti: Stripe HMAC signature verified before parse (app/api/webhooks/stripe/route.ts:11-14); replay/idempotency guard not yet implemented |
 | SEC-037 | Pricing set/verified server-side only | ☐ | |
 
 ### Rate Limiting & Abuse Prevention
 
 | ID | Requirement (short) | Status | Evidence / Notes |
 |---|---|---|---|
-| SEC-032 | Rate limits on login/signup/paid APIs (IP + account) | ☐ | |
+| SEC-032 | Rate limits on login/signup/paid APIs (IP + account) | ✅ | Tijarti: rateLimit login 10/10min, register 6/h, NDA 20/h, listing-create 8/h, listings 120/min (route files) |
 | SEC-033 | Bot protection/CAPTCHA on public forms | ☐ | |
 
 ### Infrastructure & Configuration
@@ -133,7 +135,7 @@ screenshot/console reference.
 | SEC-013 | Logs redact secrets/PII at library level | ☐ | |
 | SEC-014 | Generic prod errors; traces stay server-side | ☐ | |
 | SEC-040 | Logs/log-endpoints themselves protected | ☐ | |
-| SEC-048 | Audit logs for security events (actor/IP/UA/time) | ☐ | |
+| SEC-048 | Audit logs for security events (actor/IP/UA/time) | ✅ | Tijarti: AuditEvent(actor/ipHash/type/time) written on register/NDA/promote (lib/db/store.ts:63-79,148-160) |
 | SEC-049 | Security alerting wired to a human-read channel | ☐ | |
 
 ### Supply Chain & Resilience
@@ -172,16 +174,16 @@ screenshot/console reference.
 | SEC-074 | Third-party build actions vetted before adoption | ☐ | |
 | SEC-075 | Build deps pinned (SHA-pinned actions, lockfile `npm ci`) | ☐ | |
 | SEC-076 | Preview/staging deployments auth-protected; never touch prod data anonymously | ☐ | |
-| SEC-077 | Passwords NIST-validated (length floor, 64+ accepted, no composition/rotation) + breached-password blocklist | ☐ | |
+| SEC-077 | Passwords NIST-validated (length floor, 64+ accepted, no composition/rotation) + breached-password blocklist | 🔶 | Tijarti: len≥8/max128/no composition/custom denylist (lib/validation.ts:23-31); breached-password API integration pending |
 | SEC-078 | Collection/export endpoints clamp page size server-side (hard max ~100) | ☐ | |
-| SEC-079 | Step-up re-auth ≤15min on sensitive ops; contact changes notify old+new with reversal window; support path never bypasses MFA | ☐ | |
-| SEC-080 | Third-party scripts allowlisted + SRI/self-hosted; CSP blocks all other origins | ☐ | |
+| SEC-079 | Step-up re-auth ≤15min on sensitive ops; contact changes confirm-to-activate w/ 24h auto-revert | 🔶 | v4.1 2026-08-25: simplified to solo-scale mechanics per proportionality review (tests/run-repo-tests.ps1 green); runtime evidence still owed per project |
+| SEC-080 | Third-party scripts allowlisted + SRI/self-hosted; CSP blocks all other origins | 🔶 | v4.1 2026-08-25: dynamic-payload carve-out added (ads/GTM-class tags cannot carry SRI); fact-checked against SRI limitations |
 | SEC-081 | No unmasked prod PII in lower envs; destructive scripts require env-naming flag; env-var name parity + fail-fast boot | ☐ | |
 | SEC-082 | Break-glass recovery codes offline + exercised runbook per infra account | ☐ | |
-| SEC-083 | Identity inventory (humans + keys/tokens/grants); same-day offboarding; quarterly dormant-access purge | ☐ | |
+| SEC-083 | Identity inventory (humans + keys/tokens/grants); same-day offboarding; quarterly dormant-access purge | ➖ | Retired v4.1 2026-08-25 (owner-approved): deferred until first hire — see Exceptions Register in security-authentication.md; interim coverage via SEC-010 quarterly sweep |
 | SEC-084 | Zero dangling DNS records; quarterly takeover-fingerprint zone audit | ☐ | |
-| SEC-085 | AI model versions pinned; deprecation watch; eval-set deploy gate *(feature-gated: external AI APIs)* | ☐ | |
-| SEC-086 | Card pages processor-iframe-only; SAQ A filed w/ script confirmation *(feature-gated: self-hosted checkout)* | ☐ | |
+| SEC-085 | AI model versions pinned; deprecation watch; golden-set smoke test before AI releases *(feature-gated: external AI APIs)* | 🔶 | v4.1 2026-08-25: stored-eval-set deploy gate replaced by ≥5-prompt golden-set smoke test (proportionality review); pinning/deprecation clauses unchanged |
+| SEC-086 | Card pages processor-iframe-only; SAQ A filed w/ affirmative script-susceptibility confirmation *(feature-gated: self-hosted checkout)* | 🔶 | v4.1 2026-08-25: corrected vs PCI SSC FAQ 1588 — extra scripts do NOT void SAQ-A eligibility; custom card fields do; filing requires evidenced confirmation |
 | SEC-087 | DDoS/WAF platform posture confirmed before launch spikes *(feature-gated: traffic-attracting launch)* | ☐ | |
 
 ---
@@ -200,7 +202,7 @@ screenshot/console reference.
 
 ---
 
-## ⚙️ Backend Performance & Audits (8) — v2 items 69–76
+## ⚙️ Backend Performance & Audits (12) — v2/v4 items 69–80
 [backend-performance.md](./backend-performance.md)
 
 | ID | Requirement (short) | Status | Evidence / Notes |
@@ -227,11 +229,11 @@ screenshot/console reference.
 
 | ID | Requirement (short) | Status | Evidence / Notes |
 |---|---|---|---|
-| LEG-075 | Accessibility statement + WCAG 2.1 AA incl. alt text on all images | ☐ | |
+| LEG-075 | Accessibility statement + WCAG 2.1 AA incl. alt text on all images | 🔶 | v4.1 2026-08-25: EAA microenterprise exemption test corrected to Directive 2019/882 Art. 4(5) — financial limb is turnover OR balance sheet ≤ €2m, not both |
 | LEG-076 | EULA published, versioned | ☐ | |
 | LEG-077 | Privacy Policy: exact data inventory, bases, transfers | ☐ | |
 | LEG-078 | ToS published; acceptance captured w/ version+timestamp | ☐ | |
-| LEG-079 | Cookie consent STRICT opt-in; nothing non-essential pre-consent | ☐ | |
+| LEG-079 | Cookie consent STRICT opt-in; nothing non-essential pre-consent | ✅ | Tijarti 2026-08-25: audit PRE-TICKED-CONSENT PASS; analytics/marketing gated behind consent (components/CookieConsent.tsx) |
 
 ### Deletion Mechanics
 
@@ -272,7 +274,7 @@ screenshot/console reference.
 | LEG-097 | GDPR Art. 27 written EU representative named in policy *(feature-gated: EU customers, no EU entity)* | ☐ | |
 | LEG-098 | Per-channel opt-in, approved templates, registered sender IDs for WhatsApp/SMS *(feature-gated: messaging channels)* | ☐ | |
 | LEG-099 | VAT place-of-supply billing route recorded (Non-Union OSS vs MoR) before first EU consumer sale *(feature-gated: direct EU B2C billing)* | ☐ | |
-| LEG-100 | UGC/AI-content surfaces: report control → moderation queue w/ SLA, statement of reasons, appeals *(feature-gated: public UGC/AI content)* | ☐ | |
+| LEG-100 | UGC/AI-content surfaces: report control → owner action under published takedown policy; VLOP-scale machinery only at volume *(feature-gated: public UGC/AI content)* | 🔶 | v4.1 2026-08-25: simplified to manual solo-scale mechanism per proportionality review (DSA Art. 16 duty unchanged) |
 
 ---
 
@@ -284,12 +286,12 @@ screenshot/console reference.
 | SEO-096 | Launched on custom domain (no platform-preview URL) | ☐ | |
 | SEO-097 | No boilerplate tab titles ("Vite + React" etc.) | ☐ | |
 | SEO-098 | Open Graph/Twitter tags + image on every shareable page | ☐ | |
-| SEO-099 | Exactly one `<h1>` per page; hierarchical headings; landmarks | ☐ | |
+| SEO-099 | Exactly one `<h1>` per page; hierarchical headings; landmarks | ✅ | Tijarti 2026-08-25: audit H1-COUNT PASS |
 | SEO-100 | Canonical URLs on every indexable page | ☐ | |
 | SEO-101 | JSON-LD structured data, validated | ☐ | |
-| SEO-102 | sitemap.xml present, accurate, linked from robots.txt | ☐ | |
-| SEO-103 | `<html lang>` correct (+hreflang when multi-language) | ☐ | |
-| SEO-104 | robots.txt allows intended crawlers; blocks only deliberately | ☐ | |
+| SEO-102 | sitemap.xml present, accurate, linked from robots.txt | ✅ | Tijarti 2026-08-25: app/sitemap.ts serves valid XML via virtual route (curl-verified); audit NO-SITEMAP WARN = static-file false positive, justified |
+| SEO-103 | `<html lang>` correct (+hreflang when multi-language) | ✅ | Tijarti: `<html lang={locale} dir={dir}>` (app/layout.tsx:59); hreflang deferred until ccTLDs exist |
+| SEO-104 | robots.txt allows intended crawlers; blocks only deliberately | ✅ | Tijarti 2026-08-25: app/robots.ts serves allow-all + blocks /api,/dashboard,/login,/register + sitemap link (curl-verified); audit ROBOTS-TXT WARN = static-file false positive, justified |
 | SEO-105 | llms.txt removed unless deliberately maintained | ☐ | |
 | SEO-106 | View-source shows real content (SSR/prerender), curl-verified | ☐ | |
 | SEO-107 | Zero console errors in production build | ☐ | |
@@ -352,10 +354,10 @@ Mapping: 124←105 · 125←106 · 126←107 · 127←108+109 · 128←110 · 12
 | UIX-113 | Images compressed/modern formats/lazy/sized | ☐ | |
 | UIX-114 | Success messages on every mutating action (aria-live) | ☐ | |
 | UIX-115 | Error messages actionable on every failure mode | ☐ | |
-| UIX-116 | No placeholder/lorem/TODO content shipped | ☐ | |
+| UIX-116 | No placeholder/lorem/TODO content shipped | ✅ | Tijarti 2026-08-25: audit PLACEHOLDER-CONTENT PASS |
 | UIX-117 | Logo clickable → home, accessible name present | ☐ | |
-| UIX-118 | Phone numbers are tel: links (international format) | ☐ | |
-| UIX-119 | Emails are mailto: links | ☐ | |
+| UIX-118 | Phone numbers are tel: links (international format) | ✅ | Tijarti 2026-08-25: audit CONTACT-NOT-CLICKABLE PASS (tel: ×1) |
+| UIX-119 | Emails are mailto: links | ✅ | Tijarti 2026-08-25: audit CONTACT-NOT-CLICKABLE PASS (mailto: ×3) |
 
 ---
 
@@ -372,7 +374,7 @@ Mapping: 124←105 · 125←106 · 126←107 · 127←108+109 · 128←110 · 12
 | OPS-125 | Email capture lawful: double-opt-in, unsubscribe honored | ☐ | |
 | OPS-126 | A/B testing hygiene if used (anti-flicker, no SEO cloaking) | ☐ | |
 | OPS-127 | Heatmap/replay masks PII, consent-gated if used | ☐ | |
-| OPS-128 | Sending domains enforce SPF/DKIM/DMARC (≥quarantine); transactional mail on dedicated subdomain | ☐ | |
+| OPS-128 | Sending domains enforce SPF/DKIM/DMARC (≥quarantine); transactional mail on dedicated subdomain | 🔶 | v4.1 2026-08-25: attribution corrected — platform bulk-sender floor is p=none; quarantine-or-stricter is house policy exceeding it |
 | OPS-129 | Domain auto-renew/transfer-lock/secondary-contact/expiry alarm ≥30d; same alarm wired to TLS certs | ☐ | |
 
 ---
@@ -381,15 +383,15 @@ Mapping: 124←105 · 125←106 · 126←107 · 127←108+109 · 128←110 · 12
 
 | Section | IDs | ✅ | 🔶 | ⛔ | ☐ | ➖ |
 |---|---|---|---|---|---|---|
-| Security | 87 | | | | 87 | |
+| Security | 87 | 10 | 8 | | 68 | 1 |
 | Mobile | 6 | | | | 6 | |
 | Performance | 12 | | | | 12 | |
-| Legal | 26 | | | | 26 | |
-| SEO | 14 | | | | 14 | |
+| Legal | 26 | 1 | 4 | | 21 | |
+| SEO | 14 | 4 | | | 10 | |
 | Conversion | 20 | | | | 19 | 1 |
-| UI/UX | 15 | | | | 15 | |
-| Ops | 10 | | | | 10 | |
-| **Total** | **190** | | | | **189** | **1** |
+| UI/UX | 15 | 3 | | | 12 | |
+| Ops | 10 | | 1 | | 9 | |
+| **Total** | **190** | 18 | 13 | | 163 | 2 |
 
 *190 ledger IDs. History: v3's 164 covered the 154-point master list; v4
 (2026-08-24 research pass) added 26 items from a sourced gap analysis

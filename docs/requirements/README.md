@@ -26,9 +26,11 @@ live status. Nothing is "done" until that file says so with evidence.
 | [`tooling-costs.md`](./tooling-costs.md) | What each external dependency costs: free paths, free tiers, paid triggers | cost map for all tools referenced above |
 | [`compliance-checklist.md`](./compliance-checklist.md) | Master status ledger for all of the above | All 190 |
 
-**Automated verification:** `scripts/audit-compliance.ps1` implements every
-`[AUTO]` check (secrets, injection patterns, storage misuse, headers inputs,
-SEO metadata, sitemap/robots, bundle sizes…). Run it after changes:
+**Automated verification:** `scripts/audit-compliance.ps1` implements the
+static/grep layer of the `[AUTO]` tags (secrets, injection patterns, storage
+misuse, crawler config, bundle/image budgets…). The remaining `[AUTO]`
+verifications are runtime/DNS/live-service probes, executed as agent-run or
+CI checks per each row's verification column. Run it after changes:
 
 ```powershell
 powershell -File scripts/audit-compliance.ps1 -Target <project-folder> [-Deep]

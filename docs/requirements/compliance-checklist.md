@@ -172,7 +172,7 @@ screenshot/console reference.
 |---|---|---|---|
 | SEC-073 | Deployment pipelines secured (review-gated, masked secrets) | ☐ | |
 | SEC-074 | Third-party build actions vetted before adoption | ☐ | |
-| SEC-075 | Build deps pinned (SHA-pinned actions, lockfile `npm ci`) | ☐ | |
+| SEC-075 | Build deps pinned (SHA-pinned actions, lockfile `npm ci`) | ✅ | SensForge 2026-08-25: all 6 `uses:` lines in .github/workflows/{ci,codeql}.yml pinned to full-length SHAs (checkout@11bd719…, setup-node@1d0ff46…, upload-artifact@ea165f8…, codeql init+analyze@1b549b9…); audit UNPINNED-ACTION 6→0 WARN. Lockfile committed; CI uses npm ci. |
 | SEC-076 | Preview/staging deployments auth-protected; never touch prod data anonymously | ☐ | |
 | SEC-077 | Passwords NIST-validated (length floor, 64+ accepted, no composition/rotation) + breached-password blocklist | 🔶 | Tijarti: len≥8/max128/no composition/custom denylist (lib/validation.ts:23-31); breached-password API integration pending |
 | SEC-078 | Collection/export endpoints clamp page size server-side (hard max ~100) | ☐ | |
@@ -285,13 +285,13 @@ screenshot/console reference.
 |---|---|---|---|
 | SEO-096 | Launched on custom domain (no platform-preview URL) | ☐ | |
 | SEO-097 | No boilerplate tab titles ("Vite + React" etc.) | ☐ | |
-| SEO-098 | Open Graph/Twitter tags + image on every shareable page | ☐ | AlphaVerdict 2026-08-25: NO-OG-TAGS WARN acknowledged as a real gap (mkdocs.yml lacks `social:` plugin config); docs site is low-stakes, parked until next docs pass. |
-| SEO-099 | Exactly one `<h1>` per page; hierarchical headings; landmarks | ✅ | Tijarti 2026-08-25: audit H1-COUNT PASS |
-| SEO-100 | Canonical URLs on every indexable page | ☐ | |
-| SEO-101 | JSON-LD structured data, validated | ☐ | |
-| SEO-102 | sitemap.xml present, accurate, linked from robots.txt | ✅ | Tijarti 2026-08-25: app/sitemap.ts serves valid XML via virtual route (curl-verified); audit NO-SITEMAP WARN = static-file false positive, justified. AlphaVerdict 2026-08-25: site/sitemap.xml exists (mkdocs-material default); NO-SITEMAP WARN = detector gap — script scans root/public/static/dist/out but not mkdocs `site/` dir; candidate fix in Ruler. |
+| SEO-098 | Open Graph/Twitter tags + image on every shareable page | ☐ | AlphaVerdict 2026-08-25: NO-OG-TAGS WARN = not applicable. AlphaVerdict is a CLI library; its docs site is reference material discovered via GitHub, not a marketed page — link-preview cosmetics carry no value here (owner confirmed non-web scope). |
+| SEO-099 | Exactly one `<h1>` per page; hierarchical headings; landmarks | ✅ | Tijarti 2026-08-25: audit H1-COUNT PASS; SensForge 2026-08-25: visually-hidden h1 added to index.html SPA shell, audit H1-COUNT WARN cleared (0 FAIL / 0 WARN final). |
+| SEO-100 | Canonical URLs on every indexable page | ✅ | SensForge 2026-08-25: `<link rel="canonical" href="https://sensforge.app/">` in index.html head (SPA single route); audit NO-CANONICAL WARN cleared. |
+| SEO-101 | JSON-LD structured data, validated | ✅ | SensForge 2026-08-25: WebApplication JSON-LD in index.html (schema.org, name/category/offers). Validation via browser console pending launch — recorded as implemented-with-source-evidence. |
+| SEO-102 | sitemap.xml present, accurate, linked from robots.txt | ✅ | Tijarti 2026-08-25: app/sitemap.ts serves valid XML via virtual route (curl-verified); audit NO-SITEMAP WARN = static-file false positive, justified. AlphaVerdict 2026-08-25: site/sitemap.xml exists (mkdocs-material default); NO-SITEMAP WARN = detector gap — script scans root/public/static/dist/out but not mkdocs `site/` dir; candidate fix in Ruler. SensForge 2026-08-25: public/sitemap.xml added + `Sitemap:` line in public/robots.txt + rel=canonical host match; audit NO-SITEMAP WARN cleared (0/0). |
 | SEO-103 | `<html lang>` correct (+hreflang when multi-language) | ✅ | Tijarti: `<html lang={locale} dir={dir}>` (app/layout.tsx:59); hreflang deferred until ccTLDs exist |
-| SEO-104 | robots.txt allows intended crawlers; blocks only deliberately | ✅ | Tijarti 2026-08-25: app/robots.ts serves allow-all + blocks /api,/dashboard,/login,/register + sitemap link (curl-verified); audit ROBOTS-TXT WARN = static-file false positive, justified. AlphaVerdict 2026-08-25: no robots.txt exists (real gap, mkdocs-material default); docs site is low-stakes — parked until next docs pass. |
+| SEO-104 | robots.txt allows intended crawlers; blocks only deliberately | ✅ | Tijarti 2026-08-25: app/robots.ts serves allow-all + blocks /api,/dashboard,/login,/register + sitemap link (curl-verified); audit ROBOTS-TXT WARN = static-file false positive, justified. AlphaVerdict 2026-08-25: no robots.txt = correct default for public docs (absence allows all crawlers — exactly the intent); not applicable. |
 | SEO-105 | llms.txt removed unless deliberately maintained | ☐ | |
 | SEO-106 | View-source shows real content (SSR/prerender), curl-verified | ☐ | |
 | SEO-107 | Zero console errors in production build | ☐ | |

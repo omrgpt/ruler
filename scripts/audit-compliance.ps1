@@ -248,8 +248,13 @@ Invoke-GrepCheck -Name 'SECRET-ASSIGNMENT' -ReqIds 'SEC-001, SEC-003' -Severity 
     -SkipLineIfMatch '(?i)autocomplete'
 
 # SEC-047 / SEC-009 : privileged backend key referenced outside server-side folders
+# v4.1.1: assignment form (`NAME=xyz` / `NAME: xyz`) so documentation prose and
+# empty .env.example templates do not false-positive.
+# v4.1.2 reconciliation: runtime ACCESS forms (`process.env.SERVICE_ROLE_KEY`,
+# `os.environ["..."]`) still fail outside server dirs - a client file merely
+# referencing the privileged key is itself the leak vector.
 Invoke-GrepCheck -Name 'PRIVILEGED-KEY-IN-CLIENT' -ReqIds 'SEC-009, SEC-047' -Severity 'FAIL' `
-    -Pattern '(?i)(supabase[_-]?service[_-]?role|SERVICE_ROLE|service[_-]?account|FIREBASE[_-]?ADMIN|admin[_-]?sdk|master[_-]?key|root[_-]?password)' `
+    -Pattern '(?i)((supabase[_-]?service[_-]?role|SERVICE_ROLE|service[_-]?account|FIREBASE[_-]?ADMIN|admin[_-]?sdk|master[_-]?key|root[_-]?password)\w*\s*[:=]\s*[''\"]?[^''\s#]|process\.env\.[A-Za-z0-9_]*(SERVICE[_-]?ROLE|FIREBASE[_-]?ADMIN)|os\.environ\[[''\"][A-Za-z0-9_]*(SERVICE[_-]?ROLE|FIREBASE[_-]?ADMIN))' `
     -ExcludeRegex '^(server|backend|functions|api|workers?|scripts|cron|jobs|tools|migrations?|supabase)[/\\]|[/\\](server|backend|functions|api|workers?|scripts|cron|jobs|tools|migrations?|supabase)[/\\]|^docs[/\\]requirements[/\\]'
 
 # SEC-028 : session/auth tokens in web storage

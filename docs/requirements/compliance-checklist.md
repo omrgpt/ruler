@@ -34,7 +34,7 @@ screenshot/console reference.
 | ID | Requirement (short) | Status | Evidence / Notes |
 |---|---|---|---|
 | SEC-001 | No DB credentials in code/bundles/logs | ✅ | Tijarti 2026-08-25: audit PASS (GIT-TRACKED-SECRETS, SECRET-TOKENS, SECRET-ASSIGNMENT) |
-| SEC-002 | .env gitignored, never tracked | ✅ | Tijarti 2026-08-25: audit PASS GITIGNORE-ENV |
+| SEC-002 | .env gitignored, never tracked | ✅ | Tijarti 2026-08-25: audit PASS GITIGNORE-ENV; docsqueeze 2026-08-25: .gitignore gained `.env`/`.env.*`/`!.env.example` rules, audit PASS GITIGNORE-ENV (commit 1b27986 lineage); agentport 2026-08-25: same guard added, audit PASS GITIGNORE-ENV (commit 2aa5a15) |
 | SEC-003 | API keys server-side env only; short-lived where possible | ✅ | Tijarti 2026-08-25: audit PASS PRIVILEGED-KEY-IN-CLIENT; Stripe secret read server-side only (app/api/webhooks/stripe/route.ts) |
 | SEC-015 | Git history secret-free (rotate+purge on leak) | ☐ | |
 | SEC-016 | No secrets in front-end bundles | ☐ | |
@@ -80,7 +80,7 @@ screenshot/console reference.
 |---|---|---|---|
 | SEC-017 | Never trust client-side security decisions | ☐ | |
 | SEC-018 | Schema-based validation: types, lengths, reject unexpected fields | ✅ | Tijarti: zod schema for every API input (lib/validation.ts); E2E 422 rejection verified 2026-08-24/25 |
-| SEC-019 | Parameterized queries exclusively (SQL injection) | ☐ | |
+| SEC-019 | Parameterized queries exclusively (SQL injection) | ✅ | docsqueeze 2026-08-25: dynamic SQL identifiers from sqlite_master now gated by strict `_SQLITE_IDENT_RE` allowlist before interpolation; non-conforming names listed-but-skipped; adversarial regression test `test_sqlite_hostile_identifiers_never_reach_sql`; audit SQL-CONCATENATION FAIL 2→PASS; 78 tests OK; commit 1b27986 |
 | SEC-020 | NoSQL injection blocked (operator/`$where`) | ☐ | |
 | SEC-039 | Every API route validates inputs independently | ☐ | |
 | SEC-058 | Mass assignment blocked via field allowlists | ☐ | |
@@ -161,7 +161,7 @@ screenshot/console reference.
 
 | ID | Requirement (short) | Status | Evidence / Notes |
 |---|---|---|---|
-| SEC-069 | Business-logic abuse tested (discounts, credits, sequences) | ☐ | |
+| SEC-069 | Business-logic abuse tested (discounts, credits, sequences) | ✅ | Tijarti 2026-08-25: valuation-gaming audit (3 independent agents + fuzz suite) found & fixed loss-declaration window, revenue-fallback exploit, NaN poisoning — regression tests scripts/engine-tests.mjs (22) + live replay scripts/live-engine-verify.py (11 PASS); see .hermes/research/engine-verification.md |
 | SEC-070 | Race conditions prevented (atomic ops, locks) | ☐ | |
 | SEC-071 | Security checks fail CLOSED on error/timeout | ☐ | |
 | SEC-072 | Strict timeouts on external APIs + DB queries | ☐ | |
@@ -172,7 +172,7 @@ screenshot/console reference.
 |---|---|---|---|
 | SEC-073 | Deployment pipelines secured (review-gated, masked secrets) | ☐ | |
 | SEC-074 | Third-party build actions vetted before adoption | ☐ | |
-| SEC-075 | Build deps pinned (SHA-pinned actions, lockfile `npm ci`) | ✅ | SensForge 2026-08-25: all 6 `uses:` lines in .github/workflows/{ci,codeql}.yml pinned to full-length SHAs (checkout@11bd719…, setup-node@1d0ff46…, upload-artifact@ea165f8…, codeql init+analyze@1b549b9…); audit UNPINNED-ACTION 6→0 WARN. Lockfile committed; CI uses npm ci. |
+| SEC-075 | Build deps pinned (SHA-pinned actions, lockfile `npm ci`) | ✅ | SensForge 2026-08-25: all 6 `uses:` lines in .github/workflows/{ci,codeql}.yml pinned to full-length SHAs (checkout@11bd719…, setup-node@1d0ff46…, upload-artifact@ea165f8…, codeql init+analyze@1b549b9…); audit UNPINNED-ACTION 6→0 WARN. Lockfile committed; CI uses npm ci. docsqueeze 2026-08-25: 7 `uses:` lines pinned (checkout@3d3c42e… v7, setup-python@5fda3b9… v7, codeql@4c0873e… v4), audit UNPINNED-ACTION PASS; agentport 2026-08-25: 5 `uses:` lines pinned (checkout@11d5960… v4, setup-python@a26af69… v5, codeql@4c0873e… v4), audit UNPINNED-ACTION PASS; both verified CI+CodeQL green post-push |
 | SEC-076 | Preview/staging deployments auth-protected; never touch prod data anonymously | ☐ | |
 | SEC-077 | Passwords NIST-validated (length floor, 64+ accepted, no composition/rotation) + breached-password blocklist | 🔶 | Tijarti: len≥8/max128/no composition/custom denylist (lib/validation.ts:23-31); breached-password API integration pending |
 | SEC-078 | Collection/export endpoints clamp page size server-side (hard max ~100) | ☐ | |
@@ -383,15 +383,15 @@ Mapping: 124←105 · 125←106 · 126←107 · 127←108+109 · 128←110 · 12
 
 | Section | IDs | ✅ | 🔶 | ⛔ | ☐ | ➖ |
 |---|---|---|---|---|---|---|
-| Security | 87 | 10 | 8 | | 68 | 1 |
+| Security | 87 | 13 | 8 | | 65 | 1 |
 | Mobile | 6 | | | | 6 | |
 | Performance | 12 | | | | 12 | |
-| Legal | 26 | 1 | 4 | | 21 | |
-| SEO | 14 | 4 | | | 10 | |
+| Legal | 26 | 1 | 2 | | 23 | |
+| SEO | 14 | 6 | | | 8 | |
 | Conversion | 20 | | | | 19 | 1 |
 | UI/UX | 15 | 3 | | | 12 | |
 | Ops | 10 | | 1 | | 9 | |
-| **Total** | **190** | 18 | 13 | | 163 | 2 |
+| **Total** | **190** | 23 | 11 | | 154 | 2 |
 
 *190 ledger IDs. History: v3's 164 covered the 154-point master list; v4
 (2026-08-24 research pass) added 26 items from a sourced gap analysis

@@ -227,6 +227,18 @@ export const password = "123456";
 }
 '@
 
+    # v4.1b Strix-feedback fixtures: server-side raw-HTML sink + uncontained open
+    New-Item -ItemType Directory -Force -Path (Join-Path $trap 'pyapp') | Out-Null
+    Set-Content -LiteralPath (Join-Path $trap 'pyapp\srv.py') -Encoding UTF8 -Value @'
+def render(rows):
+    html = "".join(f"<p>{row}</p>" for row in rows)
+    return html
+
+def read_user_file(name):
+    with open(os.path.join(BASE_DIR, name)) as fh:
+        return fh.read()
+'@
+
     Set-Content -LiteralPath (Join-Path $trap '.github\workflows\ci.yml') -Encoding UTF8 -Value @'
 name: CI
 on: [push]
@@ -276,6 +288,8 @@ jobs:
         'OVERSIZED-IMAGE'       = 'PASS'
         'REDUCED-MOTION-MISSING' = 'WARN'
         'MULTI-MODAL-ROOTS'     = 'PASS'
+        'SERVER-HTML-SINK'      = 'WARN'
+        'UNCONTAINED-FILE-OPEN' = 'WARN'
     }
     foreach ($k in $expect.Keys) {
         $pattern = ('(?m)^\s*{0}\s+{1}' -f [regex]::Escape($expect[$k]), [regex]::Escape($k))

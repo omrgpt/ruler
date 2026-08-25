@@ -203,6 +203,16 @@ Added in the v4 expansion (2026-08-24 research pass). Scope tags: items marked
 
 ---
 
+## Attack-Chain Awareness (reviewer guidance)
+
+Vulnerabilities compound. During live validation, a read-only path-traversal
+bug was chained to exfiltrate application source (exposing hardcoded
+credentials) and the database itself — turning two MEDIUM-class issues into a
+full compromise. When reviewing or fixing any single finding, agents MUST ask:
+*what does this bug let me reach next?* Source disclosure → secret reuse;
+injection → privilege data; SSRF → cloud metadata. Fix chains, not just sinks,
+and re-run the audit after every fix in a chain.
+
 ## Exceptions Register
 
 Any deviation from these rules requires an entry here: ID, reason, compensating

@@ -379,6 +379,15 @@ description = "a CLI tool that serves no pages"
 
     Record 'C-web project keeps all checks on'      ($r3.Output -notmatch 'not applicable')
 
+    # v4.2 project-hook linker: one command wires any repo to the library
+    $linker = Join-Path $repoRoot 'scripts\link-project.ps1'
+    $hookProj = Join-Path $sandbox 'hook-project'
+    New-Item -ItemType Directory -Path $hookProj -Force | Out-Null
+    $rh = Invoke-RulerPs $linker @('-Target', $hookProj, '-Name', 'Demo CLI')
+    $hookText = Get-Content (Join-Path $hookProj 'AGENTS.md') -Raw
+    Record 'C-linker writes hook with project name' (($rh.ExitCode -eq 0) -and ($hookText -match 'Demo CLI') -and ($hookText -match 'github\.com/omrgpt/ruler'))
+    Record 'C-linker refuses overwrite without -Force' ((Invoke-RulerPs $linker @('-Target', $hookProj)).Output -match 'already exists')
+
     # =========================================================================
     Write-Host "`n--- SUITE D: cross-file consistency ---" -ForegroundColor Cyan
     # =========================================================================
@@ -473,7 +482,8 @@ description = "a CLI tool that serves no pages"
             $_ -notmatch '^(AGENTS\.md|README\.md|\.gitignore|\.gitattributes)$' -and
             $_ -notmatch '^docs/requirements/' -and
             $_ -notmatch '^scripts/[^/]+\.ps1$' -and
-            $_ -notmatch '^tests/[^/]+\.ps1$'
+            $_ -notmatch '^tests/[^/]+\.ps1$' -and
+            $_ -notmatch '^templates/'
         })
         Record 'D-tracked files stay inside whitelist' ($outside.Count -eq 0) ($outside -join ', ')
     }

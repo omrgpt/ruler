@@ -39,6 +39,11 @@
 /tests/*
 !/tests/*.ps1
 
+# --- templates (project onboarding hooks ONLY) ---
+!/templates/
+/templates/*
+!/templates/*.md
+
 # --- junk, anywhere ---
 *.log
 *.tmp

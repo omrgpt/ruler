@@ -39,6 +39,9 @@ writing a single line.
 # force with -ProjectType Web|Library)
 powershell -File scripts/audit-compliance.ps1 -Target <project-folder> [-Deep]
 
+# wire ANY project to this library (writes its AGENTS.md hook pointing here)
+powershell -File scripts/link-project.ps1 -Target <project-folder>
+
 # verify the library structure itself
 powershell -File scripts/verify-library.ps1
 ```

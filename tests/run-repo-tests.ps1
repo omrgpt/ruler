@@ -385,7 +385,7 @@ description = "a CLI tool that serves no pages"
     New-Item -ItemType Directory -Path $hookProj -Force | Out-Null
     $rh = Invoke-RulerPs $linker @('-Target', $hookProj, '-Name', 'Demo CLI')
     $hookText = Get-Content (Join-Path $hookProj 'AGENTS.md') -Raw
-    Record 'C-linker writes hook with project name' (($rh.ExitCode -eq 0) -and ($hookText -match 'Demo CLI') -and ($hookText -match 'github\.com/omrgpt/ruler'))
+    Record 'C-linker writes hook with project name' (($rh.ExitCode -eq 0) -and ($hookText -match 'Demo CLI') -and ($hookText -match 'github\.com/omrgpt/ruler') -and ($hookText -match [char]0x2014))
     Record 'C-linker refuses overwrite without -Force' ((Invoke-RulerPs $linker @('-Target', $hookProj)).Output -match 'already exists')
 
     # =========================================================================

@@ -58,7 +58,9 @@ if (Test-Path -LiteralPath $dest) {
     Write-Host " Backed up existing AGENTS.md -> $(Split-Path -Leaf $bak)"
 }
 
-$content = (Get-Content -LiteralPath $template -Raw) -replace '<PROJECT_NAME>', $Name
+# -Encoding UTF8 matters: Windows PowerShell 5.1 defaults to ANSI and would
+# mangle the template's em-dashes/ellipses into mojibake.
+$content = (Get-Content -LiteralPath $template -Raw -Encoding UTF8) -replace '<PROJECT_NAME>', $Name
 Set-Content -LiteralPath $dest -Encoding UTF8 -Value $content
 Write-Host (" Wired {0} -> Ruler library ({1})" -f $Name, 'https://github.com/omrgpt/ruler')
 Write-Host " Next: commit AGENTS.md in the project so every agent inherits it."

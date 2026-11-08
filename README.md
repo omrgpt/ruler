@@ -17,6 +17,7 @@ writing a single line.
 | `docs/requirements/*.md` | The 190 requirements, each with rule text + a verification method (`[AUTO]` / `[AGENT]` / `[MANUAL]`) |
 | `docs/requirements/compliance-checklist.md` | Shared requirements index; each project keeps its own status and evidence |
 | `docs/requirements/tooling-costs.md` | Free/paid map + what to reconfigure when you upgrade a plan |
+| `docs/requirements/security-testing-tools.md` | Security tools, independent cross-checks, and safe testing scope |
 | `scripts/audit-compliance.ps1` | 37 automated machine checks (grep/git/npm/DNS-free static layer) covering part of the `[AUTO]` items; the rest of the `[AUTO]` tags are executed as agent-run or CI probes per each row's verification column |
 | `scripts/verify-library.ps1` | 32 assertions proving the library itself is structurally sound |
 | `tests/run-repo-tests.ps1` | Full test suite: tamper-resistance, planted-violation detection, exit-code contracts, cross-file consistency |

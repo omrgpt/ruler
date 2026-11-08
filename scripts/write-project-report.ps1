@@ -42,6 +42,16 @@ $lines.Add("- Scope: $ProjectType; target project only.")
 $lines.Add('- Security tools, versions, and scope: Ruler static audit. Other tools: UNVERIFIED.')
 $lines.Add('- Full coverage: UNVERIFIED. A passing check does not prove the whole requirement.')
 $lines.Add('')
+$lines.Add('### Security tool coverage')
+$lines.Add('')
+$lines.Add('Agent: record RUN, UNAVAILABLE, BLOCKED or N/A for each tool, with reason, version, scope, evidence and next step. Inclusion in Strix is not proof a tool ran.')
+$lines.Add('')
+$lines.Add('| Tool | Status | Evidence / next step |')
+$lines.Add('|---|---|---|')
+foreach ($tool in @('Strix','PentAGI','ZAP','Nuclei','Gitleaks','Trivy','OSV-Scanner','Opengrep','Semgrep','k6')) {
+    $lines.Add(('| {0} | NOT RUN | UNVERIFIED |' -f $tool))
+}
+$lines.Add('')
 $lines.Add('### Automated checks')
 $lines.Add('')
 foreach ($check in $Checks) { $lines.Add('- ' + (($check.ToString() -replace '[\r\n]+', ' ') -replace '\s+$', '')) }

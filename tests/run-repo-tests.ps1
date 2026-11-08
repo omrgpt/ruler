@@ -483,7 +483,8 @@ description = "a CLI tool that serves no pages"
             $_ -notmatch '^docs/requirements/' -and
             $_ -notmatch '^scripts/[^/]+\.ps1$' -and
             $_ -notmatch '^tests/[^/]+\.ps1$' -and
-            $_ -notmatch '^templates/'
+            $_ -notmatch '^templates/' -and
+            $_ -ne '.github/workflows/update-readme.yml'
         })
         Record 'D-tracked files stay inside whitelist' ($outside.Count -eq 0) ($outside -join ', ')
     }

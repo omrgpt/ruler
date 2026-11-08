@@ -3,7 +3,7 @@
 **Scope:** All server code, database queries, background jobs, and data
 lifecycle logic across projects in this workspace.
 **Items:** PERF-069 … PERF-080 (12 requirements).
-**Legend:** `[AUTO]` script-checked · `[AGENT]` agent-verified w/ evidence ·
+**Legend:** `[AUTO]` machine-verifiable (not necessarily by the Ruler audit) · `[AGENT]` agent-verified w/ evidence ·
 `[MANUAL]` human/monitoring action.
 
 ---

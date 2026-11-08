@@ -58,6 +58,45 @@ tool, version where available, scope, result, evidence, fix and retest in the
 project's RULER-REPORT.md. Do not copy credentials, sensitive data, or raw
 scanner output containing them into the report.
 
+### Scope, safety and performance
+
+Identify the project's features, data, trust boundaries, deployment and
+jurisdictions before applying rules. Apply every relevant security, privacy,
+reliability and accessibility control. Mark N/A only with evidence and a
+specific reason; uncertainty is UNVERIFIED, not N/A. Separate legal duties
+from stronger house policies and verify jurisdiction-specific rules with
+current authoritative sources and qualified counsel when needed.
+An `[AUTO]` tag means a check can be automated; it does not mean the Ruler
+audit ran it. Cite the tool and output for each claim, and record missing
+checks as UNVERIFIED.
+
+### Production-readiness workflow
+
+For a full review or release, inventory every requirement ID and determine
+applicability from the project and its jurisdictions. Inspect what already
+exists. Implement missing applicable safeguards within the authorized scope;
+reuse working controls. Run the relevant automated, security and functional
+checks, investigate findings, fix confirmed issues and retest. Check cookies
+and privacy behavior against the actual data flows and current authoritative
+guidance; do not infer legal approval from a scanner or a template.
+
+In the project report, identify for each ID whether it was already present,
+implemented or changed, N/A with a reason, or still blocked. Record the test
+or review actually performed, evidence and outcome. Where a tool, deployment,
+human review or permission is unavailable, name it and the next action; do
+not pretend it ran. Report unresolved release blockers and required owner
+actions. Never mark a control PASS solely because code exists or an unrelated
+scan passed. After a limited change, review its affected requirements and
+keep a full-project assessment UNVERIFIED until it has actually been done.
+
+Prefer built-in or already-configured controls when they satisfy the same
+requirement. Do not weaken a safeguard to reduce code or latency. Measure
+important user flows before and after material changes; investigate regressions
+and verify limits, recovery, data isolation and abuse resistance. Add
+complexity or background processing only when a real requirement needs it.
+Never promise immunity from attacks or legal claims. Keep critical failures,
+unverified legal obligations and required human reviews visible before release.
+
 ### Hard rules
 
 1. **Read before you write.** Before touching code in an area, read the
@@ -73,6 +112,14 @@ scanner output containing them into the report.
    without concrete evidence. Avoid copying secrets or personal data into reports.
    Use Strix or other available tools where relevant and authorized; record the
    tool, scope and result. Unavailable or unrun tools stay unverified.
+   The audit starts an IN PROGRESS review and lists every requirement as
+   UNVERIFIED. After checks, fixes and retests, complete each row: APPLIES or
+   N/A with reason; PASS, FAIL, PARTIAL or UNVERIFIED with evidence and next
+   step. Record project findings and Ruler mistakes (false positives, misses,
+   wrong scope, skipped checks and errors). Preserve earlier reviews. Never
+   label a review complete while checks remain unverified; name those checks.
+   Use the Caveman skill for the report when available. If unavailable, write
+   concise plain language. Never omit evidence, uncertainty or safety details.
 4. **Run the audit after changes** covered by SEC/UIX/LEG items:
    `powershell -File <ruler>/scripts/audit-compliance.ps1 -Target <project-folder>`
    All FAIL findings must be fixed; remaining WARNs must be justified against

@@ -3,7 +3,7 @@
 **Scope:** All server, client, database, infrastructure, payment, pipeline,
 and AI code in every project in this workspace.
 **Items:** SEC-001 … SEC-087 (87 requirements; SEC-083 retired v4.1 — see its row and the Exceptions Register).
-**Legend:** `[AUTO]` script-checked · `[AGENT]` agent-verified w/ evidence ·
+**Legend:** `[AUTO]` machine-verifiable (not necessarily by the Ruler audit) · `[AGENT]` agent-verified w/ evidence ·
 `[MANUAL]` human/cloud-console action. See [README](./README.md).
 
 ---

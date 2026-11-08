@@ -8,7 +8,7 @@ and therefore subject to LEG-079 (strict opt-in consent before any tag fires)
 and CRO-104 (justified inventory). An analytics requirement is NOT met if it
 fires before consent.
 
-**Legend:** `[AUTO]` script-checked · `[AGENT]` agent-verified w/ evidence ·
+**Legend:** `[AUTO]` machine-verifiable (not necessarily by the Ruler audit) · `[AGENT]` agent-verified w/ evidence ·
 `[MANUAL]` human/console action.
 
 ---

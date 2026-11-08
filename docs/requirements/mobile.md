@@ -3,7 +3,7 @@
 **Scope:** Any iOS/Android app, React Native/Expo/Flutter/native wrapper shipped
 by projects in this workspace.
 **Items:** MOB-064 … MOB-069 (6 requirements).
-**Legend:** `[AUTO]` script-checked · `[AGENT]` agent-verified w/ evidence ·
+**Legend:** `[AUTO]` machine-verifiable (not necessarily by the Ruler audit) · `[AGENT]` agent-verified w/ evidence ·
 `[MANUAL]` human/device/console action.
 
 ---

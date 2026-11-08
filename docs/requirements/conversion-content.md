@@ -3,7 +3,7 @@
 **Scope:** Public marketing pages, landing pages, pricing pages, signup funnels
 across projects in this workspace.
 **Items:** CRO-085 … CRO-104 (20 requirements).
-**Legend:** `[AUTO]` script-checked · `[AGENT]` agent-verified w/ evidence ·
+**Legend:** `[AUTO]` machine-verifiable (not necessarily by the Ruler audit) · `[AGENT]` agent-verified w/ evidence ·
 `[MANUAL]` human judgment/action.
 
 These are quality bars, not hard security: an agent may flag violations and

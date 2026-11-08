@@ -128,11 +128,11 @@ file.
 
 ## Verification Legend
 
-Every requirement row carries exactly one primary verification method:
+Requirements can use more than one verification method:
 
 | Tag | Meaning |
 |---|---|
-| `[AUTO]` | Machine-checked by `scripts/audit-compliance.ps1` or CI. Zero judgment involved. |
+| `[AUTO]` | Machine-verifiable by the Ruler audit, CI, or another identified tool. Check the actual tool and output; this tag does not prove that Ruler runs the check or that the whole requirement passed. |
 | `[AGENT]` | An AI agent verifies during development/review and must attach concrete evidence (file:line, test name, command output). |
 | `[MANUAL]` | Human action in a cloud console, legal document, or external service. Agent can prepare but cannot attest. |
 

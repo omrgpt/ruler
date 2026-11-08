@@ -3,7 +3,7 @@
 **Scope:** Every deployed web product in this workspace — domain setup,
 metadata, crawler files, rendering output, and shipped bundle weight.
 **Items:** SEO-096 … SEO-109 (14 requirements).
-**Legend:** `[AUTO]` script-checked · `[AGENT]` agent-verified w/ evidence ·
+**Legend:** `[AUTO]` machine-verifiable (not necessarily by the Ruler audit) · `[AGENT]` agent-verified w/ evidence ·
 `[MANUAL]` human/console action.
 
 ---

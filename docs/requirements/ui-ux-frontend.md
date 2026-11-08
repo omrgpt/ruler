@@ -2,7 +2,7 @@
 
 **Scope:** All web frontends across projects in this workspace.
 **Items:** UIX-105 … UIX-119 (15 requirements).
-**Legend:** `[AUTO]` script-checked · `[AGENT]` agent-verified w/ evidence ·
+**Legend:** `[AUTO]` machine-verifiable (not necessarily by the Ruler audit) · `[AGENT]` agent-verified w/ evidence ·
 `[MANUAL]` human/device action.
 
 ---

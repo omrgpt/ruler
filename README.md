@@ -31,6 +31,11 @@ writing a single line.
   Whitelist-only `.gitignore` makes leaking practically impossible.
 - **Machine-checked where possible.** Prose doesn't scale; the audit script
   does.
+- **Relevant and efficient.** Apply controls to real project features and
+  risks; document exclusions. Prefer existing platform controls and measure
+  performance without weakening protections.
+- **Evidence has limits.** A scan cannot prove a project unhackable or guarantee
+  legal compliance. Record unverified checks and obtain appropriate expert review.
 
 ## Usage
 
@@ -45,6 +50,13 @@ powershell -File scripts/link-project.ps1 -Target <project-folder>
 # verify the library structure itself
 powershell -File scripts/verify-library.ps1
 ```
+
+Each project audit appends an IN PROGRESS review to that project's
+`RULER-REPORT.md`. It records the Ruler and project revisions when available,
+audit checks and findings, and every requirement ID as UNVERIFIED. The agent
+then records applicability, reasons, evidence, project findings, Ruler
+mistakes, fixes and retests. The report stays with the project. Use the
+Caveman skill when available, while keeping evidence and uncertainty clear.
 
 Agents: read `AGENTS.md` first. For linked projects, the project hook calls for
 security checks suited to the project, including Strix when available and
@@ -187,28 +199,28 @@ Only apply requirements relevant to the project. A passing automated audit cover
 | LEG-076 | EULA published, versioned |
 | LEG-077 | Privacy Policy: exact data inventory, bases, transfers |
 | LEG-078 | ToS published; acceptance captured w/ version+timestamp |
-| LEG-079 | Cookie consent STRICT opt-in; nothing non-essential pre-consent |
-| LEG-080 | Right to be forgotten: in-app deletion across all stores ≤30d |
-| LEG-085 | Soft-deleted records fully anonymized where retention is mandated |
-| LEG-086 | Deleted data ages out of backups within compliant window (≤30d default) |
-| LEG-081 | Data portability: machine-readable export ≤30d, audit-logged |
+| LEG-079 | Block non-essential tracking until required consent; no needless banner |
+| LEG-080 | Erasure requests, exceptions, processors and backups assessed |
+| LEG-085 | Minimize and protect retained data; distinguish pseudonymization |
+| LEG-086 | Backup expiry and safe restores follow documented retention |
+| LEG-081 | Applicable portability rights and request deadlines assessed |
 | LEG-082 | Data localization/transfer mechanisms documented per region |
 | LEG-083 | Zero pre-ticked marketing checkboxes; consent records kept |
-| LEG-084 | Breach plan: ≤72h regulator notice, templates, drill done |
-| LEG-087 | Age verification gate at onboarding; minors blocked where intended |
-| LEG-088 | Verifiable parental consent documented + revocable (if minors allowed) |
+| LEG-084 | Breach plan, jurisdiction-specific triggers, deadlines and drill |
+| LEG-087 | Proportionate child-safety and age-assurance assessment |
+| LEG-088 | Parental authorization where applicable; document legal basis |
 | LEG-089 | Minor accounts default to maximum privacy settings |
-| LEG-090 | ZDR agreements with AI providers (no training on user payloads) |
-| LEG-091 | PII scrubbing middleware before external AI calls |
-| LEG-092 | Cross-border transfer adequacy verified per external destination |
-| LEG-093 | Explicit unbundled consent for sensitive data processing |
+| LEG-090 | AI provider terms, retention and training use reviewed |
+| LEG-091 | Minimize and protect user data sent to external AI |
+| LEG-092 | Assess actual external data flows and cross-border transfers |
+| LEG-093 | Assess sensitive data, legal basis and applicable safeguards |
 | LEG-094 | Retention periods enforced by automated purge mechanisms with logged runs (policy text alone fails) |
-| LEG-095 | Customer AI answers grounded in approved source w/ citations or refuse; AI disclosure; transcripts kept *(feature-gated: customer-facing AI)* |
+| LEG-095 | Grounded customer AI, disclosure and justified transcript retention |
 | LEG-096 | EU withdrawal-right mechanics at checkout incl. electronic withdrawal function; waivers only where valid *(feature-gated: EU B2C checkout)* |
-| LEG-097 | GDPR Art. 27 written EU representative named in policy *(feature-gated: EU customers, no EU entity)* |
+| LEG-097 | Assess GDPR Art. 27 representative requirements and exceptions |
 | LEG-098 | Per-channel opt-in, approved templates, registered sender IDs for WhatsApp/SMS *(feature-gated: messaging channels)* |
-| LEG-099 | VAT place-of-supply billing route recorded (Non-Union OSS vs MoR) before first EU consumer sale *(feature-gated: direct EU B2C billing)* |
-| LEG-100 | UGC/AI-content surfaces: report control → owner action under published takedown policy; VLOP-scale machinery only at volume *(feature-gated: public UGC/AI content)* |
+| LEG-099 | Assess seller, product, VAT route and registration before EU sales |
+| LEG-100 | Assess DSA notice, decision and complaint duties for actual service |
 
 ### Search and production (SEO)
 

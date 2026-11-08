@@ -38,6 +38,13 @@ master list) in `docs/requirements/`. Apply requirements to each project only wh
 
 ### Hard rules
 
+Scope each requirement to the project's actual features, data, deployment and
+jurisdictions. N/A needs evidence and a reason; uncertainty stays UNVERIFIED.
+Separate verified legal duties from house policy, and seek qualified review
+where required. Never claim complete security or legal immunity.
+Prefer existing platform controls where they meet the requirement; measure
+performance impacts and never weaken security or privacy for speed.
+
 1. **Read before you write.** Before touching code in an area, read the
    matching requirement file(s). Auth/session work → security file. Forms,
    tracking, cookies → also legal file. Landing pages → conversion + ui-ux.
@@ -46,7 +53,7 @@ master list) in `docs/requirements/`. Apply requirements to each project only wh
    implemented or affected (e.g., `Implements SEC-028, LEG-079`).
 3. **Evidence or it isn't done.** Never claim a requirement is satisfied
    without concrete evidence: `file:line`, test name, audit output, or dated
-   console reference. Report `UNVERIFIED` instead of guessing. Record project-specific status and evidence in that project's `RULER-REPORT.md`, never in this shared repository.
+   console reference. Report `UNVERIFIED` instead of guessing. Record project-specific status and evidence in that project's `RULER-REPORT.md`, never in this shared repository. Use the Caveman skill when available; preserve clear evidence and uncertainty.
 4. **Run the audit after changes** to code covered by SEC/UIX/LEG items:
    ```powershell
    powershell -File scripts/audit-compliance.ps1 -Target <project-folder>

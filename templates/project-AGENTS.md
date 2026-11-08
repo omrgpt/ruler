@@ -73,6 +73,14 @@ scanner output containing them into the report.
    without concrete evidence. Avoid copying secrets or personal data into reports.
    Use Strix or other available tools where relevant and authorized; record the
    tool, scope and result. Unavailable or unrun tools stay unverified.
+   The audit starts an IN PROGRESS review and lists every requirement as
+   UNVERIFIED. After checks, fixes and retests, complete each row: APPLIES or
+   N/A with reason; PASS, FAIL, PARTIAL or UNVERIFIED with evidence and next
+   step. Record project findings and Ruler mistakes (false positives, misses,
+   wrong scope, skipped checks and errors). Preserve earlier reviews. Never
+   label a review complete while checks remain unverified; name those checks.
+   Use the Caveman skill for the report when available. If unavailable, write
+   concise plain language. Never omit evidence, uncertainty or safety details.
 4. **Run the audit after changes** covered by SEC/UIX/LEG items:
    `powershell -File <ruler>/scripts/audit-compliance.ps1 -Target <project-folder>`
    All FAIL findings must be fixed; remaining WARNs must be justified against

@@ -1,0 +1,19 @@
+name: Test Ruler
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify library
+        shell: powershell
+        run: |
+          ./scripts/verify-library.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Run repository tests
+        shell: powershell
+        run: |
+          ./tests/run-repo-tests.ps1 -SkipNetwork
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

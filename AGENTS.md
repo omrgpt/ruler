@@ -21,8 +21,7 @@ flagged spreadsheet formulas, never run executables listed inside archives.
 
 This workspace tracks the **master compliance checklist** as **190 stable
 IDs** (v4, expanded 2026-08-24 from the 164-ID v3 set covering the 154-point
-master list) in `docs/requirements/`. These apply to every project and
-every agent.
+master list) in `docs/requirements/`. Apply requirements to each project only where relevant.
 
 | Area | File | IDs |
 |---|---|---|
@@ -35,7 +34,7 @@ every agent.
 | UI, UX & frontend | `docs/requirements/ui-ux-frontend.md` | UIX-105…119 |
 | Analytics & monitoring | `docs/requirements/analytics-monitoring.md` | OPS-120…129 |
 | Tool costs & paid-plan behavior | `docs/requirements/tooling-costs.md` | cost map |
-| Master status ledger + v2/v3/v4 mapping | `docs/requirements/compliance-checklist.md`, `README.md` | all 190 |
+| Requirements index + v2/v3/v4 mapping | `docs/requirements/compliance-checklist.md`, `README.md` | all 190 |
 
 ### Hard rules
 
@@ -47,8 +46,7 @@ every agent.
    implemented or affected (e.g., `Implements SEC-028, LEG-079`).
 3. **Evidence or it isn't done.** Never claim a requirement is satisfied
    without concrete evidence: `file:line`, test name, audit output, or dated
-   console reference. Report `UNVERIFIED` instead of guessing. Then update
-   the row's Status + Evidence in `compliance-checklist.md`.
+   console reference. Report `UNVERIFIED` instead of guessing. Record project-specific status and evidence in that project's `RULER-REPORT.md`, never in this shared repository.
 4. **Run the audit after changes** to code covered by SEC/UIX/LEG items:
    ```powershell
    powershell -File scripts/audit-compliance.ps1 -Target <project-folder>

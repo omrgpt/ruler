@@ -19,8 +19,8 @@ and AI code in every project in this workspace.
 | SEC-016 | Front-end JS bundles contain no secrets. Anything imported into client code is public by definition; only anon/public keys designed for browser use may ship there. | `[AUTO]` bundle grep for secret patterns; `[AGENT]` verify only `NEXT_PUBLIC_`/VITE-style public vars used client-side |
 | SEC-030 | JWT signing secrets are long random values from env vars, rotated on schedule and immediately on suspicion; tokens carry short expiry + audience/issuer claims. Never a default like `secret`, `jwt_secret`, or the app name. | `[AUTO]` weak-secret-pattern scan; `[AGENT]` cite where secret is loaded from env |
 | SEC-035 | Default credentials are removed everywhere before deploy: DB users, admin panels, routers, sample apps, `.htaccess` basics. No `admin/admin`, no vendor defaults. | `[AUTO]` default-credential-pattern scan; `[MANUAL]` console spot-check at launch |
-| SEC-062 | Every paid service (hosting, AI APIs, email, storage) has a hard spend cap and a billing alert configured so a bug or abuse cannot drain the account silently. | `[MANUAL]` billing console screenshot per service recorded in checklist evidence |
-| SEC-063 | 2FA is enabled on all infrastructure accounts: hosting, cloud consoles, DB dashboards, domain registrar, DNS, GitHub/org admin, email root. Prefer hardware key or TOTP over SMS. | `[MANUAL]` account-by-account confirmation logged in checklist |
+| SEC-062 | Every paid service (hosting, AI APIs, email, storage) has a hard spend cap and a billing alert configured so a bug or abuse cannot drain the account silently. | `[MANUAL]` billing console screenshot per service recorded in the project's RULER-REPORT.md |
+| SEC-063 | 2FA is enabled on all infrastructure accounts: hosting, cloud consoles, DB dashboards, domain registrar, DNS, GitHub/org admin, email root. Prefer hardware key or TOTP over SMS. | `[MANUAL]` account-by-account confirmation logged in the project's RULER-REPORT.md |
 
 ---
 
@@ -54,7 +54,7 @@ and AI code in every project in this workspace.
 
 | ID | Requirement | Verification |
 |---|---|---|
-| SEC-007 | DB permission rules reviewed and locked down: no publicly writable tables, no world-readable sensitive tables, grants limited to explicit needs. For Supabase/Firebase-style backends, security rules deny by default. | `[AGENT]` dump effective grants/rules into checklist evidence; `[MANUAL]` console review |
+| SEC-007 | DB permission rules reviewed and locked down: no publicly writable tables, no world-readable sensitive tables, grants limited to explicit needs. For Supabase/Firebase-style backends, security rules deny by default. | `[AGENT]` record evidence of effective grants/rules in the project's RULER-REPORT.md; `[MANUAL]` console review |
 | SEC-008 | Row-Level Security enabled on every table containing user or business data, with policies tested for allow/deny both ways. Tables without RLS need a written exception in this file's changelog explaining why they're safe. | `[AUTO]` SQL/CLI check: list tables missing RLS → FAIL if any unexempted |
 | SEC-047 | App connects to DB with least-privilege roles: separate roles for app/runtime vs migrations vs admin. No app runtime connection uses superuser/owner. Service keys never used from clients. | `[AGENT]` cite connection strings' roles (names only); `[AUTO]` service-key-in-client scan |
 | SEC-055 | Sensitive columns (PII, tokens, payment-adjacent data) encrypted at rest — disk/volume encryption on the managed DB plus application-level encryption for crown-jewel fields when feasible. Keys managed outside the DB. | `[MANUAL]` provider setting confirmation; `[AGENT]` identify encrypted columns |
@@ -142,8 +142,8 @@ and AI code in every project in this workspace.
 | ID | Requirement | Verification |
 |---|---|---|
 | SEC-042 | Dependencies scanned and updated: automated vulnerability scanning ( Dependabot/audit CI), zero known-critical vulns allowed at release, lockfiles committed, updates merged on schedule not never. | `[AUTO]` `npm audit --omit=dev` (or ecosystem equivalent) in audit script `-Deep` mode / CI |
-| SEC-043 | New packages vetted before adoption: name typosquatting check, maintainer/publisher sanity, weekly-download floor, repo activity, license. Pin versions; review transitive surprises on major bumps. | `[AGENT]` vetting notes appended to checklist for each newly added dependency |
-| SEC-050 | Backups automatic AND tested: scheduled DB backups, retention policy, point-in-time recovery where offered, and a restore drill performed (backup ≠ verified until restored). Restore drill date recorded. | `[MANUAL]` perform restore drill; record date + duration in checklist |
+| SEC-043 | New packages vetted before adoption: name typosquatting check, maintainer/publisher sanity, weekly-download floor, repo activity, license. Pin versions; review transitive surprises on major bumps. | `[AGENT]` vetting notes recorded in the project's RULER-REPORT.md for each newly added dependency |
+| SEC-050 | Backups automatic AND tested: scheduled DB backups, retention policy, point-in-time recovery where offered, and a restore drill performed (backup ≠ verified until restored). Restore drill date recorded. | `[MANUAL]` perform restore drill; record date + duration in the project's RULER-REPORT.md |
 | SEC-057 | No unreviewed code merges to main: PR review by owner or second agent pass with requirement-ID citation, CI green (lint/type/tests/audit) required. Direct-to-main pushes disabled. | `[MANUAL]` branch protection settings; `[AGENT]` PR descriptions cite SEC/LEG IDs touched |
 
 ---

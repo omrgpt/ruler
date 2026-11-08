@@ -450,17 +450,10 @@ description = "a CLI tool that serves no pages"
     }
     Record 'D-roll-up table matches category counts' $rollupOk
 
-    $statusSymbols = @('☐', '🔶', '✅', '➖', '⛔')
-    $badStatus = 0
-    foreach ($line in (Get-Content (Join-Path $libDir 'compliance-checklist.md'))) {
-        if ($line -match '^\|\s*(SEC|MOB|PERF|LEG|SEO|CRO|UIX|OPS)-\d{3}\s*\|') {
-            $cells = ($line -split '\|').Trim()
-            $hasStatus = $false
-            foreach ($s in $statusSymbols) { if ($cells -contains $s) { $hasStatus = $true } }
-            if (-not $hasStatus) { $badStatus++ }
-        }
-    }
-    Record 'D-every ledger row has a valid status symbol' ($badStatus -eq 0) "bad=$badStatus"
+    $projectEvidenceRows = @($checklist -split "`n" | Where-Object {
+        $_ -match '^\|\s*(SEC|MOB|PERF|LEG|SEO|CRO|UIX|OPS)-\d{3}\s*\|.*\|\s*(☐|🔶|✅|➖|⛔)\s*\|'
+    })
+    Record 'D-shared index contains no project status columns' ($projectEvidenceRows.Count -eq 0)
 
     $malformed = 0
     foreach ($line in (Get-Content (Join-Path $libDir 'security-authentication.md'))) {
@@ -483,7 +476,8 @@ description = "a CLI tool that serves no pages"
             $_ -notmatch '^docs/requirements/' -and
             $_ -notmatch '^scripts/[^/]+\.ps1$' -and
             $_ -notmatch '^tests/[^/]+\.ps1$' -and
-            $_ -notmatch '^templates/'
+            $_ -notmatch '^templates/' -and
+            $_ -notin @('.github/workflows/update-readme.yml', '.github/workflows/test-ruler.yml')
         })
         Record 'D-tracked files stay inside whitelist' ($outside.Count -eq 0) ($outside -join ', ')
     }

@@ -5,9 +5,7 @@ operations requirement across all projects in this workspace. Written in plain
 Markdown so **any** AI agent (Codex, Gemini CLI, Claude Code, Cursor,
 opencode) or human can read and act on it.
 
-**Master tracker:** [`compliance-checklist.md`](./compliance-checklist.md) —
-all 190 tracked IDs (v4), with
-live status. Nothing is "done" until that file says so with evidence.
+**Requirements index:** [`compliance-checklist.md`](./compliance-checklist.md) lists all 190 IDs. Each project keeps its own applicability decisions, status and evidence in its own `RULER-REPORT.md`.
 
 ---
 
@@ -24,7 +22,7 @@ live status. Nothing is "done" until that file says so with evidence.
 | [`ui-ux-frontend.md`](./ui-ux-frontend.md) | Mobile UX, metadata, pages, messages, polish | UIX-105 … UIX-119 (15) |
 | [`analytics-monitoring.md`](./analytics-monitoring.md) | Uptime, error tracking, SEO console, analytics, experiments, email authentication, domain/cert expiry guards | OPS-120 … OPS-129 (10) |
 | [`tooling-costs.md`](./tooling-costs.md) | What each external dependency costs: free paths, free tiers, paid triggers | cost map for all tools referenced above |
-| [`compliance-checklist.md`](./compliance-checklist.md) | Master status ledger for all of the above | All 190 |
+| [`compliance-checklist.md`](./compliance-checklist.md) | Shared requirements index for all of the above | All 190 |
 
 **Automated verification:** `scripts/audit-compliance.ps1` implements the
 static/grep layer of the `[AUTO]` tags (secrets, injection patterns, storage
@@ -119,7 +117,7 @@ item). The granular v1 IDs remain active and are satisfied together:
 112←CRO-087+089 · 113←CRO-088+096 · 115←CRO-091+092 · 116←CRO-093+094 ·
 118←CRO-097+098 · 127←UIX-108+109 · 132←UIX-114+115 · 134←UIX-117+118+119.
 CRO-104 (unnecessary cookies/storage) was absorbed into LEG-079's consent
-scope and marked ➖ consolidated in the ledger.
+scope and marked consolidated in the requirements index.
 
 To add future requirements: append the next unused number in the correct
 category file and mirror the row in the checklist. Never renumber or reuse.
@@ -139,7 +137,7 @@ Every requirement row carries exactly one primary verification method:
 | `[MANUAL]` | Human action in a cloud console, legal document, or external service. Agent can prepare but cannot attest. |
 
 An item counts as compliant **only** when its verification method has been
-executed and the evidence recorded in `compliance-checklist.md`.
+executed and the evidence recorded in the relevant project's `RULER-REPORT.md`.
 
 Audit-script conventions:
 - Any source line containing the token `noqa` is skipped by static scans —
@@ -156,14 +154,14 @@ Audit-script conventions:
    tracking, cookies → also `legal-compliance-gcc-gdpr.md`; landing pages →
    `conversion-content.md` + `ui-ux-frontend.md` + `seo-metadata-production.md`;
    queries/APIs/deletion flows → `backend-performance.md`).
-2. Implement the change **and** satisfy every related requirement ID.
+2. Implement the change and satisfy the related requirement IDs that apply.
 3. Run the automated audit (command above). Fix every `FAIL`; justify every
    remaining `WARN`.
 4. In your summary/commit message, cite affected requirement IDs
    (e.g., `Implements SEC-028, LEG-079`).
-5. Update `compliance-checklist.md`: set status and paste evidence
-   (file path + line, test id, audit output snippet, screenshot reference).
-   **No evidence ⇒ not done.**
+5. Update the project's `RULER-REPORT.md` with applicability, results, evidence,
+   unverified checks, and the project and Ruler revisions. Keep project results
+   out of the shared requirements index. **No evidence means not done.**
 
 ### Anti-hallucination protocol
 

@@ -44,6 +44,14 @@
 /templates/*
 !/templates/*.md
 
+# --- README tracker automation ---
+!/.github/
+/.github/*
+!/.github/workflows/
+/.github/workflows/*
+!/.github/workflows/update-readme.yml
+!/.github/workflows/test-ruler.yml
+
 # --- junk, anywhere ---
 *.log
 *.tmp

@@ -357,6 +357,10 @@ jobs:
     $report = if (Test-Path -LiteralPath $reportPath) { Get-Content -LiteralPath $reportPath -Raw -Encoding UTF8 } else { '' }
     $reportIds = [regex]::Matches($report, '(?m)^\| (?:SEC|MOB|PERF|LEG|SEO|CRO|UIX|OPS)-\d{3} \|')
     Record 'C-report lists every requirement as unverified' (($reportIds.Count -eq 190) -and ($report -match 'IN PROGRESS') -and ($report -match 'Ruler mistakes'))
+    $missingTools = @('Strix','PentAGI','ZAP','Nuclei','Gitleaks','Trivy','OSV-Scanner','Opengrep','Semgrep','k6' | Where-Object {
+        $report -notmatch ('(?m)^\| ' + [regex]::Escape($_) + ' \| NOT RUN \| UNVERIFIED \|')
+    })
+    Record 'C-report lists every requested tool as not run' ($missingTools.Count -eq 0) ($missingTools -join ', ')
     Add-Content -LiteralPath $reportPath -Encoding UTF8 -Value 'Preserved prior evidence.'
     $rs2 = Invoke-RulerPs $auditScript @('-Target', $spa, '-SkipGit')
     $report2 = Get-Content -LiteralPath $reportPath -Raw -Encoding UTF8

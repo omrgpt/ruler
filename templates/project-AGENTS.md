@@ -70,6 +70,25 @@ An `[AUTO]` tag means a check can be automated; it does not mean the Ruler
 audit ran it. Cite the tool and output for each claim, and record missing
 checks as UNVERIFIED.
 
+### Production-readiness workflow
+
+For a full review or release, inventory every requirement ID and determine
+applicability from the project and its jurisdictions. Inspect what already
+exists. Implement missing applicable safeguards within the authorized scope;
+reuse working controls. Run the relevant automated, security and functional
+checks, investigate findings, fix confirmed issues and retest. Check cookies
+and privacy behavior against the actual data flows and current authoritative
+guidance; do not infer legal approval from a scanner or a template.
+
+In the project report, identify for each ID whether it was already present,
+implemented or changed, N/A with a reason, or still blocked. Record the test
+or review actually performed, evidence and outcome. Where a tool, deployment,
+human review or permission is unavailable, name it and the next action; do
+not pretend it ran. Report unresolved release blockers and required owner
+actions. Never mark a control PASS solely because code exists or an unrelated
+scan passed. After a limited change, review its affected requirements and
+keep a full-project assessment UNVERIFIED until it has actually been done.
+
 Prefer built-in or already-configured controls when they satisfy the same
 requirement. Do not weaken a safeguard to reduce code or latency. Measure
 important user flows before and after material changes; investigate regressions

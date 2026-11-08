@@ -870,6 +870,20 @@ if ($failCount -gt 0) {
 } else {
     Write-Host " AUDIT PASSED (no FAIL findings). Review WARN items against their requirement IDs." -ForegroundColor Green
 }
-Write-Host (" Next steps: record evidence in docs/requirements/compliance-checklist.md") -ForegroundColor DarkCyan
+$rulerRoot = Split-Path -Parent $PSScriptRoot
+$rulerVersion = 'unknown (no Ruler Git checkout found)'
+try {
+    $gitRoot = & git -C $rulerRoot rev-parse --show-toplevel 2>$null
+    if ($LASTEXITCODE -eq 0 -and (Resolve-Path $gitRoot).Path -eq (Resolve-Path $rulerRoot).Path) {
+        $sha = & git -C $rulerRoot rev-parse HEAD 2>$null
+        if ($LASTEXITCODE -eq 0) {
+            $rulerVersion = $sha
+            if (@(& git -C $rulerRoot status --porcelain 2>$null).Count -gt 0) { $rulerVersion += ' (checkout has local changes)' }
+        }
+    }
+} catch { }
+Write-Host (" Ruler version: " + $rulerVersion) -ForegroundColor DarkCyan
+Write-Host " Next: record results and evidence in the target project's RULER-REPORT.md." -ForegroundColor DarkCyan
+Write-Host " This scan does not cover every requirement. Record unrun checks as unverified." -ForegroundColor DarkCyan
 
 exit $script:ExitCode

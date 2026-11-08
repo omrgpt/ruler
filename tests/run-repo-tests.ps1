@@ -341,6 +341,28 @@ jobs:
     Record 'C-clean project exits 0' ($r3.ExitCode -eq 0) "exit=$($r3.ExitCode)"
     Record 'C-clean project has zero FAIL findings' ($r3.Output -notmatch '(?m)^\s*\[FAIL\]')
 
+    # Rendered app shell: static HTML cannot prove its final heading. Build
+    # artifacts must still be checked even though source scans skip dist/.
+    $spa = Join-Path $sandbox 'spa-project'
+    New-Item -ItemType Directory -Path (Join-Path $spa 'dist') -Force | Out-Null
+    Set-Content -LiteralPath (Join-Path $spa 'index.html') -Encoding UTF8 -Value '<html lang="en"><div id="root"></div><script type="module" src="/src/main.jsx"></script></html>'
+    Set-Content -LiteralPath (Join-Path $spa 'vite.config.js') -Encoding UTF8 -Value 'export default {}'
+    [System.IO.File]::WriteAllText((Join-Path $spa 'dist\app.js'), ('x' * 600KB))
+    Set-Content -LiteralPath (Join-Path $spa 'dist\app.js.map') -Encoding UTF8 -Value '{}'
+    $rs = Invoke-RulerPs $auditScript @('-Target', $spa, '-SkipGit')
+    Record 'C-app shell heading stays unverified' (($rs.Output -match 'SKIP\s+H1-COUNT.*verify rendered') -and ($rs.Output -notmatch 'WARN\s+H1-COUNT') -and ($rs.Output -notmatch 'PASS\s+H1-COUNT'))
+    Record 'C-build bundle over limit detected' ($rs.Output -match 'WARN\s+BUNDLE-SIZE')
+    Record 'C-build sourcemap detected' ($rs.Output -match 'WARN\s+PUBLIC-SOURCEMAPS')
+    $reportPath = Join-Path $spa 'RULER-REPORT.md'
+    $report = if (Test-Path -LiteralPath $reportPath) { Get-Content -LiteralPath $reportPath -Raw -Encoding UTF8 } else { '' }
+    $reportIds = [regex]::Matches($report, '(?m)^\| (?:SEC|MOB|PERF|LEG|SEO|CRO|UIX|OPS)-\d{3} \|')
+    Record 'C-report lists every requirement as unverified' (($reportIds.Count -eq 190) -and ($report -match 'IN PROGRESS') -and ($report -match 'Ruler mistakes'))
+    Add-Content -LiteralPath $reportPath -Encoding UTF8 -Value 'Preserved prior evidence.'
+    $rs2 = Invoke-RulerPs $auditScript @('-Target', $spa, '-SkipGit')
+    $report2 = Get-Content -LiteralPath $reportPath -Raw -Encoding UTF8
+    Record 'C-report rerun preserves prior evidence' (($report2 -match 'Preserved prior evidence') -and ([regex]::Matches($report2, '(?m)^## Review ').Count -eq 2))
+    Record 'C-report does not audit itself' ($rs2.Output -notmatch '\[WARN\].*RULER-REPORT\.md')
+
     $r4 = Invoke-RulerPs $auditScript @('-Target', (Join-Path $sandbox 'nope-not-here'))
     Record 'C-missing target exits 1' ($r4.ExitCode -eq 1) "exit=$($r4.ExitCode)"
 

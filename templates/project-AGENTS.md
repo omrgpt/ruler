@@ -58,6 +58,11 @@ N/A, with the reason, scope and evidence. Being present inside Strix does not
 prove a tool ran. Record unavailable tools and the next step, never invent a
 result. Review third-party data sharing, cost and licensing before using a
 hosted service or external model.
+Before installing or running a tool, follow the safety check in
+`docs/requirements/security-testing-tools.md`: verify its official source,
+current advisories, chosen version, artifact integrity and permissions. Record
+the evidence and date. Block use when material risk or provenance is unresolved.
+Keep tool repositories and installations outside the Ruler repository.
 
 Review each finding, verify whether it affects this project, fix confirmed
 issues in the project, and rerun the relevant check or reproduction to verify

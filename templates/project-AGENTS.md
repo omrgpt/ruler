@@ -49,6 +49,21 @@ suitable for the target, and other relevant tools for coverage it does not
 provide. Do not assume a tool is installed or invent a successful result.
 Scope active tests to authorized targets, preferably a local or test environment.
 
+For a full review, follow `docs/requirements/security-testing-tools.md` in
+Ruler. Consider Strix, PentAGI, ZAP, Nuclei, Gitleaks, Trivy, OSV-Scanner,
+Opengrep, Semgrep and k6. Run each relevant tool when available and authorized;
+overlapping tests and independent second opinions are intentional. Compare
+results. The report must list every tool and say RUN, UNAVAILABLE, BLOCKED or
+N/A, with the reason, scope and evidence. Being present inside Strix does not
+prove a tool ran. Record unavailable tools and the next step, never invent a
+result. Review third-party data sharing, cost and licensing before using a
+hosted service or external model.
+Before installing or running a tool, follow the safety check in
+`docs/requirements/security-testing-tools.md`: verify its official source,
+current advisories, chosen version, artifact integrity and permissions. Record
+the evidence and date. Block use when material risk or provenance is unresolved.
+Keep tool repositories and installations outside the Ruler repository.
+
 Review each finding, verify whether it affects this project, fix confirmed
 issues in the project, and rerun the relevant check or reproduction to verify
 the fix. Record false positives and reasons. If a check, tool, target, or fix

@@ -27,6 +27,13 @@ Keep IDs, evidence, uncertainty, and safety details. Preserve earlier reviews.
 
 ## Security findings and retests
 
+List Strix, PentAGI, ZAP, Nuclei, Gitleaks, Trivy, OSV-Scanner, Opengrep,
+Semgrep and k6 individually. Record RUN, UNAVAILABLE, BLOCKED or N/A with
+reason, version, authorized scope, evidence and next step. Compare overlapping
+checks. Inclusion in another tool is not proof of execution.
+For each tool, also record its official source, chosen version, safety-review
+date, advisory and integrity evidence, and any unresolved risks before use.
+
 | Tool and version | Authorized scope | Finding and affected requirement | Fix or reason not applicable | Retest and evidence |
 |---|---|---|---|---|
 

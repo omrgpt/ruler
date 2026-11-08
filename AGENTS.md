@@ -46,7 +46,7 @@ master list) in `docs/requirements/`. Apply requirements to each project only wh
    implemented or affected (e.g., `Implements SEC-028, LEG-079`).
 3. **Evidence or it isn't done.** Never claim a requirement is satisfied
    without concrete evidence: `file:line`, test name, audit output, or dated
-   console reference. Report `UNVERIFIED` instead of guessing. Record project-specific status and evidence in that project's `RULER-REPORT.md`, never in this shared repository.
+   console reference. Report `UNVERIFIED` instead of guessing. Record project-specific status and evidence in that project's `RULER-REPORT.md`, never in this shared repository. Use the Caveman skill when available; preserve clear evidence and uncertainty.
 4. **Run the audit after changes** to code covered by SEC/UIX/LEG items:
    ```powershell
    powershell -File scripts/audit-compliance.ps1 -Target <project-folder>

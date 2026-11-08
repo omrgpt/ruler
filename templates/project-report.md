@@ -18,6 +18,14 @@ secrets, personal data, or raw scanner output that may contain them.
 - Skipped or not applicable, with reasons:
 - Still unverified, including manual and agent reviews not performed:
 
+## Security findings and retests
+
+| Tool and version | Authorized scope | Finding and affected requirement | Fix or reason not applicable | Retest and evidence |
+|---|---|---|---|---|
+
+Record unavailable or unrun security tools under "Still unverified". Do not
+mark a finding fixed until a relevant retest or reproducible check confirms it.
+
 ## Requirements and evidence
 
 | Requirement ID | Applicability and reason | Result | Evidence or next step |

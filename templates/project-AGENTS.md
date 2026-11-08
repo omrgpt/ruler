@@ -58,6 +58,26 @@ tool, version where available, scope, result, evidence, fix and retest in the
 project's RULER-REPORT.md. Do not copy credentials, sensitive data, or raw
 scanner output containing them into the report.
 
+### Scope, safety and performance
+
+Identify the project's features, data, trust boundaries, deployment and
+jurisdictions before applying rules. Apply every relevant security, privacy,
+reliability and accessibility control. Mark N/A only with evidence and a
+specific reason; uncertainty is UNVERIFIED, not N/A. Separate legal duties
+from stronger house policies and verify jurisdiction-specific rules with
+current authoritative sources and qualified counsel when needed.
+An `[AUTO]` tag means a check can be automated; it does not mean the Ruler
+audit ran it. Cite the tool and output for each claim, and record missing
+checks as UNVERIFIED.
+
+Prefer built-in or already-configured controls when they satisfy the same
+requirement. Do not weaken a safeguard to reduce code or latency. Measure
+important user flows before and after material changes; investigate regressions
+and verify limits, recovery, data isolation and abuse resistance. Add
+complexity or background processing only when a real requirement needs it.
+Never promise immunity from attacks or legal claims. Keep critical failures,
+unverified legal obligations and required human reviews visible before release.
+
 ### Hard rules
 
 1. **Read before you write.** Before touching code in an area, read the

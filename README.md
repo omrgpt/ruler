@@ -46,6 +46,13 @@ powershell -File scripts/link-project.ps1 -Target <project-folder>
 powershell -File scripts/verify-library.ps1
 ```
 
+Each project audit appends an IN PROGRESS review to that project's
+`RULER-REPORT.md`. It records the Ruler and project revisions when available,
+audit checks and findings, and every requirement ID as UNVERIFIED. The agent
+then records applicability, reasons, evidence, project findings, Ruler
+mistakes, fixes and retests. The report stays with the project. Use the
+Caveman skill when available, while keeping evidence and uncertainty clear.
+
 Agents: read `AGENTS.md` first. For linked projects, the project hook calls for
 security checks suited to the project, including Strix when available and
 appropriate. Investigate findings, fix confirmed issues, retest, and record

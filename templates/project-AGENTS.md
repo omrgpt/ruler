@@ -39,6 +39,25 @@ The master compliance checklist tracks **190 stable IDs** (v4). Agents apply onl
 | Analytics & monitoring | analytics-monitoring.md | OPS-120…129 |
 | Tool costs & paid-plan behavior | tooling-costs.md | cost map |
 
+### Security testing and remediation
+
+For each project, select checks suited to its technology, features, and the
+change being made. Inspect the code and run the Ruler audit; use available
+secret, dependency, static-analysis and application security tools where
+appropriate. Use Strix for authorized security testing when available and
+suitable for the target, and other relevant tools for coverage it does not
+provide. Do not assume a tool is installed or invent a successful result.
+Scope active tests to authorized targets, preferably a local or test environment.
+
+Review each finding, verify whether it affects this project, fix confirmed
+issues in the project, and rerun the relevant check or reproduction to verify
+the fix. Record false positives and reasons. If a check, tool, target, or fix
+is unavailable or cannot be verified, record it as unverified with the reason
+and next step. Do not claim a clean scan proves complete security. Record the
+tool, version where available, scope, result, evidence, fix and retest in the
+project's RULER-REPORT.md. Do not copy credentials, sensitive data, or raw
+scanner output containing them into the report.
+
 ### Hard rules
 
 1. **Read before you write.** Before touching code in an area, read the

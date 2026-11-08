@@ -18,8 +18,8 @@ $names = [ordered]@{
 $groups = @{}
 foreach ($key in $names.Keys) { $groups[$key] = [System.Collections.Generic.List[string]]::new() }
 foreach ($line in Get-Content -LiteralPath $ledger -Encoding UTF8) {
-    if ($line -match '^\|\s*((SEC|MOB|PERF|LEG|SEO|CRO|UIX|OPS)-\d{3})\s*\|\s*(.*?)\s*\|\s*(☐|🔶|✅|➖|⛔)\s*\|') {
-        $groups[$Matches[2]].Add("| $($Matches[1]) | $($Matches[3]) | $($Matches[4]) |")
+    if ($line -match '^\|\s*((SEC|MOB|PERF|LEG|SEO|CRO|UIX|OPS)-\d{3})\s*\|\s*(.*?)\s*\|') {
+        $groups[$Matches[2]].Add("| $($Matches[1]) | $($Matches[3]) |")
     }
 }
 if (($groups.Values | ForEach-Object { $_.Count } | Measure-Object -Sum).Sum -eq 0) { throw 'No checklist rows found.' }
@@ -27,18 +27,16 @@ $lines = [System.Collections.Generic.List[string]]::new()
 $lines.Add($start)
 $lines.Add('## Requirement tracker')
 $lines.Add('')
-$lines.Add('Short descriptions and status marks below come from the [master checklist](docs/requirements/compliance-checklist.md), which has evidence and notes. Updates to that checklist refresh this list after changes reach the main branch.')
+$lines.Add('Short descriptions below come from the [requirements index](docs/requirements/compliance-checklist.md). Updates to the index refresh this list after changes reach the main branch. Each project keeps its own check results and evidence.')
 $lines.Add('')
-$lines.Add('☐ Not started · 🔶 In progress · ✅ Evidence recorded · ⛔ Failing · ➖ Not applicable or combined')
-$lines.Add('')
-$lines.Add('Status marks reflect the shared checklist and its named projects; they do not establish compliance for every project. A passing automated audit covers only some requirements.')
+$lines.Add('Only apply requirements relevant to the project. A passing automated audit covers only some requirements.')
 $lines.Add('')
 foreach ($key in $names.Keys) {
     if ($groups[$key].Count -eq 0) { continue }
     $lines.Add("### $($names[$key]) ($key)")
     $lines.Add('')
-    $lines.Add('| ID | What it covers | Status |')
-    $lines.Add('|---|---|---|')
+    $lines.Add('| ID | What it covers |')
+    $lines.Add('|---|---|')
     foreach ($row in $groups[$key]) { $lines.Add($row) }
     $lines.Add('')
 }

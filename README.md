@@ -46,8 +46,11 @@ powershell -File scripts/link-project.ps1 -Target <project-folder>
 powershell -File scripts/verify-library.ps1
 ```
 
-Agents: read `AGENTS.md` first — it contains the mandatory workflow
-(read-before-write, cite IDs, attach evidence, run the audit).
+Agents: read `AGENTS.md` first. For linked projects, the project hook calls for
+security checks suited to the project, including Strix when available and
+appropriate. Investigate findings, fix confirmed issues, retest, and record
+results and unrun checks in the project's own `RULER-REPORT.md`. A clean scan
+alone does not establish complete security.
 
 <!-- requirements:start -->
 ## Requirement tracker

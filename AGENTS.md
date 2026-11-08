@@ -38,6 +38,13 @@ master list) in `docs/requirements/`. Apply requirements to each project only wh
 
 ### Hard rules
 
+Scope each requirement to the project's actual features, data, deployment and
+jurisdictions. N/A needs evidence and a reason; uncertainty stays UNVERIFIED.
+Separate verified legal duties from house policy, and seek qualified review
+where required. Never claim complete security or legal immunity.
+Prefer existing platform controls where they meet the requirement; measure
+performance impacts and never weaken security or privacy for speed.
+
 1. **Read before you write.** Before touching code in an area, read the
    matching requirement file(s). Auth/session work → security file. Forms,
    tracking, cookies → also legal file. Landing pages → conversion + ui-ux.

@@ -2,6 +2,8 @@
 
 Keep this report in the project being reviewed, not in Ruler. Never include
 secrets, personal data, or raw scanner output that may contain them.
+Use the Caveman skill when available. Otherwise use concise, clear language.
+Keep IDs, evidence, uncertainty, and safety details. Preserve earlier reviews.
 
 ## Review
 
@@ -18,6 +20,11 @@ secrets, personal data, or raw scanner output that may contain them.
 - Skipped or not applicable, with reasons:
 - Still unverified, including manual and agent reviews not performed:
 
+## Ruler mistakes
+
+- False positives, missed issues, wrong scope, skipped checks, or errors:
+- Evidence and correction, or UNVERIFIED:
+
 ## Security findings and retests
 
 | Tool and version | Authorized scope | Finding and affected requirement | Fix or reason not applicable | Retest and evidence |
@@ -31,7 +38,8 @@ mark a finding fixed until a relevant retest or reproducible check confirms it.
 | Requirement ID | Applicability and reason | Result | Evidence or next step |
 |---|---|---|---|
 
-Only mark a requirement passed when its required checks have evidence. An audit
-pass does not mean all requirements passed. Add rows for relevant requirements
-and explain exclusions. Record each review separately so earlier results remain
-traceable to the project and Ruler revisions used.
+List every requirement ID. For each, state whether it applies and why; mark
+PASS, FAIL, PARTIAL, or UNVERIFIED with evidence or next step. Only mark PASS
+when required checks have evidence. Explain each N/A. The audit starts the
+table with every ID unverified. Complete the review after checks and retests;
+list anything still unverified. A scan cannot prove it found every mistake.

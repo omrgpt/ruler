@@ -61,7 +61,7 @@ $lines.Add('- UNVERIFIED. Review false positives, false negatives, wrong scope, 
 $lines.Add('')
 $lines.Add('### Every requirement')
 $lines.Add('')
-$lines.Add('Agent: assess every ID. State APPLIES or N/A with reason; PASS, FAIL, PARTIAL or UNVERIFIED with evidence and next step. Do not infer full compliance from one scan.')
+$lines.Add('Agent: assess every ID. State APPLIES or N/A with reason; PASS, FAIL, PARTIAL or UNVERIFIED. Record what was already present, added, changed or blocked, the test performed, evidence and next step. Do not infer full compliance from one scan.')
 $lines.Add('')
 $lines.Add('| ID | Applies / reason | Result / evidence |')
 $lines.Add('|---|---|---|')
@@ -72,7 +72,7 @@ foreach ($rule in $rules) {
 }
 $lines.Add('')
 $lines.Add('Use Caveman skill when available. Write short, clear sentences. Keep IDs, evidence, uncertainty, dates and safety details.')
-$lines.Add('After all available work and retests, replace IN PROGRESS with a truthful outcome. List remaining unverified items; never claim complete coverage without evidence.')
+$lines.Add('After all available work and retests, replace IN PROGRESS with a truthful outcome. List release blockers, owner actions and unverified items; never claim complete coverage without evidence.')
 $lines.Add('')
 $text = ($lines -join "`n") + "`n"
 if (Test-Path -LiteralPath $path) {

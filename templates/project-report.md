@@ -39,7 +39,10 @@ mark a finding fixed until a relevant retest or reproducible check confirms it.
 |---|---|---|---|
 
 List every requirement ID. For each, state whether it applies and why; mark
-PASS, FAIL, PARTIAL, or UNVERIFIED with evidence or next step. Only mark PASS
-when required checks have evidence. Explain each N/A. The audit starts the
+PASS, FAIL, PARTIAL, or UNVERIFIED. Say whether the safeguard was already
+present, added, changed, blocked, or N/A. Record the test or review performed,
+evidence and next step. Only mark PASS when required checks have evidence.
+Explain each N/A. The audit starts the
 table with every ID unverified. Complete the review after checks and retests;
-list anything still unverified. A scan cannot prove it found every mistake.
+list release blockers, owner actions, and anything still unverified. A scan
+cannot prove it found every mistake.

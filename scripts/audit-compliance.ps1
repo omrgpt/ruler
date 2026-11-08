@@ -184,11 +184,12 @@ $scanExts = @(
     '.env', '.bak', '.config', '.ini', '.cfg', '.xml', '.md', '.txt', '.log'
 )
 $skipDirRegex = '(\\|/)(node_modules|\.git|\.hg|\.svn|\.next|\.nuxt|\.output|dist|build|out|coverage|vendor|bower_components|__pycache__|\.venv|venv|env|\.tox|site-packages|\.turbo|\.cache|\.idea|\.vs)(\\|/)'
+$artifactSkipDirRegex = $skipDirRegex -replace '\|dist\|build\|out', ''
 
 $allFiles = @(Get-ChildItem -LiteralPath $Target -Recurse -File -Force -ErrorAction SilentlyContinue |
     Where-Object {
         $n = $_.FullName
-        ($n -notmatch $skipDirRegex) -and (
+        ($n -notmatch $skipDirRegex) -and ($n -ne (Join-Path $Target 'RULER-REPORT.md')) -and (
             $IncludeToolDirs -or
             ($n -notmatch '(^|[\\/])(\.agents|docsqueeze-repo|agentport)([\\/]|$)')
         ) -and (
@@ -517,11 +518,16 @@ Invoke-WebOnlyCheck -Name 'HTML-LANG-MISSING' -Body {
 # SEO-099 : exactly one <h1> per page
 Invoke-WebOnlyCheck -Name 'H1-COUNT' -Body {
     $h1Issues = 0
+    $h1Unverified = 0
     foreach ($hf in $htmlFiles) {
         $h1Matches = @(Select-String -LiteralPath $hf.FullName -Pattern '<h1[\s>]' -AllMatches -ErrorAction SilentlyContinue)
         $count = 0
         foreach ($hm in $h1Matches) { $count += $hm.Matches.Count }
-        if ($count -ne 1) {
+        $html = if ($count -eq 0) { Get-Content -LiteralPath $hf.FullName -Raw } else { '' }
+        if ($count -eq 0 -and $html -match '(?i)<(?:div|main)\b[^>]*\bid=["''](?:root|app|__next|__nuxt)["'']' -and $html -match '(?i)<script\b[^>]*\bsrc=') {
+            $h1Unverified++
+            $checkResults.Add(('SKIP  H1-COUNT              {0}: app shell; verify rendered heading [SEO-099]' -f (Resolve-Rel $hf.FullName)))
+        } elseif ($count -ne 1) {
             $reason = if ($count -eq 0) { 'no <h1> found' } else { "$count <h1> elements" }
             Add-Finding -Check 'H1-COUNT' -Severity 'WARN' -File (Resolve-Rel $hf.FullName) -Line 0 `
                 -Text "page should contain exactly one h1 ($reason)" -ReqIds 'SEO-099'
@@ -530,7 +536,7 @@ Invoke-WebOnlyCheck -Name 'H1-COUNT' -Body {
     }
     if ($h1Issues -gt 0) {
         $checkResults.Add(("WARN  {0,-22} {1,4} page(s)     [SEO-099]" -f 'H1-COUNT', $h1Issues))
-    } else {
+    } elseif ($h1Unverified -eq 0) {
         $checkResults.Add("PASS  H1-COUNT")
     }
 }
@@ -637,7 +643,7 @@ Invoke-WebOnlyCheck -Name 'BUNDLE-SIZE' -Body {
     $bundles = @(Get-ChildItem -LiteralPath $Target -Recurse -File -Force -ErrorAction SilentlyContinue |
         Where-Object {
             ($bundleExts -contains $_.Extension.ToLowerInvariant()) -and
-            ($_.FullName -notmatch $skipDirRegex) -and
+            ($_.FullName -notmatch $artifactSkipDirRegex) -and
             ($_.FullName -match '(\\|/)(public|static|dist|build|out)(\\|/)') -and
             ($_.Length -gt 500KB)
         })
@@ -757,7 +763,7 @@ Write-Banner "Build artifact checks"
 
 $sourcemapDirs = '(\\|/)(public|static|dist|build|out|export)(\\|/)'
 $sourcemaps = @(Get-ChildItem -LiteralPath $Target -Recurse -File -Filter '*.map' -Force -ErrorAction SilentlyContinue |
-    Where-Object { $_.FullName -notmatch $skipDirRegex -and $_.FullName -match $sourcemapDirs })
+    Where-Object { $_.FullName -notmatch $artifactSkipDirRegex -and $_.FullName -match $sourcemapDirs })
 if ($sourcemaps.Count -gt 0) {
     foreach ($sm in $sourcemaps) {
         Add-Finding -Check 'PUBLIC-SOURCEMAPS' -Severity 'WARN' -File (Resolve-Rel $sm.FullName) -Line 0 `
@@ -883,7 +889,16 @@ try {
     }
 } catch { }
 Write-Host (" Ruler version: " + $rulerVersion) -ForegroundColor DarkCyan
-Write-Host " Next: record results and evidence in the target project's RULER-REPORT.md." -ForegroundColor DarkCyan
+if ((Resolve-Path -LiteralPath $Target).Path -eq (Resolve-Path -LiteralPath $rulerRoot).Path) {
+    Write-Host " Project report skipped: Ruler itself is the target." -ForegroundColor DarkCyan
+} else {
+    try {
+        & (Join-Path $PSScriptRoot 'write-project-report.ps1') -Target $Target -RulerRoot $rulerRoot -RulerVersion $rulerVersion -ProjectType $projectKindLabel -Checks @($checkResults | ForEach-Object { $_ }) -Findings @($Findings | ForEach-Object { $_ })
+    } catch {
+        Write-Host (" Report not written: " + $_.Exception.Message) -ForegroundColor Red
+        if ($script:ExitCode -eq 0) { $script:ExitCode = 1 }
+    }
+}
 Write-Host " This scan does not cover every requirement. Record unrun checks as unverified." -ForegroundColor DarkCyan
 
 exit $script:ExitCode
